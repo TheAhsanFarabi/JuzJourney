@@ -351,8 +351,13 @@ const LearningView = ({ level, onReady }: { level: Level, onReady: () => void })
 
 // 3. QUIZ VIEW (Centered)
 const QuizView = ({ level, onNext, onMistake }: { level: Level, onNext: () => void, onMistake: () => void }) => {
-    const [selectedWords, setSelectedWords] = useState<Word[]>([]);
-    const [availableWords, setAvailableWords] = useState<(Word & { uniqueId: number, used: boolean, colorIdx: number })[]>([]);
+    // 1. Create a combined type for the quiz words
+    type QuizWord = Word & { uniqueId: number; used: boolean; colorIdx: number };
+
+    // 2. Apply it to both states
+    const [selectedWords, setSelectedWords] = useState<QuizWord[]>([]);
+    const [availableWords, setAvailableWords] = useState<QuizWord[]>([]);
+    
     const [status, setStatus] = useState<'playing' | 'success' | 'error'>('playing'); 
     const audioRef = useRef<HTMLAudioElement | null>(null);
   

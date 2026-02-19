@@ -8,7 +8,8 @@ import { DownloadCertificate } from '@/app/components/Certificate';
 import { 
   Users, Sun, Star, Lock, Check, Award, 
   Zap, Flame, Shield, Home, Laptop, X, Heart, 
-  BookOpen
+  BookOpen,
+  Sparkles
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -265,6 +266,21 @@ export default function Dashboard() {
                     <div className="h-2 bg-slate-100 rounded-full mt-2">
                        <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${(completedCount / totalCount) * 100}%` }}></div>
                     </div>
+                 </div>
+              </div>
+           </div>
+
+           <div 
+              onClick={() => router.push('/names')}
+              className="border-2 border-slate-100 rounded-2xl p-6 bg-white shadow-sm cursor-pointer hover:border-emerald-300 hover:shadow-md transition-all group"
+           >
+              <div className="flex items-center gap-4">
+                 <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
+                    <Sparkles className="w-6 h-6 text-emerald-500 group-hover:text-white transition-colors" />
+                 </div>
+                 <div>
+                    <h3 className="font-bold text-slate-800 text-sm">99 Names of Allah</h3>
+                    <p className="text-xs text-slate-400 font-medium">Learn & Reflect</p>
                  </div>
               </div>
            </div>

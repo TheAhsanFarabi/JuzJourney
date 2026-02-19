@@ -233,7 +233,6 @@ const LearningView = ({ level, onReady }: { level: Level, onReady: () => void })
   const isQuizUnlocked = bestScore !== null && bestScore >= 80;
 
   return (
-    // ON MOBILE: Entire container scrolls. ON DESKTOP: Split screen, independent scroll.
     <div className="flex flex-col lg:flex-row h-full w-full overflow-y-auto lg:overflow-hidden relative">
       
       {/* LEFT COLUMN: THE VERSE */}
@@ -260,6 +259,7 @@ const LearningView = ({ level, onReady }: { level: Level, onReady: () => void })
                 animate={{ opacity: 1, y: 0 }}
                 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-800 font-serif mb-6 md:mb-8 leading-relaxed dir-rtl text-center px-4" 
                 style={{ fontFamily: "'Traditional Arabic', serif", lineHeight: 1.6 }}
+                dir="rtl"
             >
                 {level.arabicFull}
             </motion.h2>
@@ -297,7 +297,7 @@ const LearningView = ({ level, onReady }: { level: Level, onReady: () => void })
                         whileHover={{ scale: 1.02, x: -5 }}
                         className={`flex items-center p-4 md:p-5 rounded-[1.5rem] md:rounded-3xl border-2 ${colors.bg} ${colors.border} transition-colors cursor-default group`}
                     >
-                        <div className={`w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl md:rounded-2xl flex items-center justify-center font-bold text-xs md:text-sm mr-4 md:mr-6 shadow-sm ${colors.badge}`}>
+                        <div className={`w-10 h-10 md:w-12 h-12 shrink-0 rounded-xl md:rounded-2xl flex items-center justify-center font-bold text-xs md:text-sm mr-4 md:mr-6 shadow-sm ${colors.badge}`}>
                             {idx + 1}
                         </div>
                         
@@ -315,7 +315,7 @@ const LearningView = ({ level, onReady }: { level: Level, onReady: () => void })
             </div>
          </div>
 
-         {/* Sticky Footer: Sticks to bottom of the scrolling container on mobile, absolute on desktop */}
+         {/* Sticky Footer */}
          <div className="sticky bottom-0 lg:absolute left-0 right-0 p-4 md:p-6 lg:p-8 bg-white/95 backdrop-blur border-t border-slate-100 z-20 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] lg:shadow-none mt-auto">
             <motion.button 
                 whileHover={isQuizUnlocked ? { scale: 1.02 } : {}}
@@ -425,11 +425,15 @@ const QuizView = ({ level, onNext, onMistake }: { level: Level, onNext: () => vo
                 </motion.button>
             </div>
             
-            {/* Drop Zone */}
-            <div className={`min-h-[140px] md:min-h-[180px] border-2 md:border-4 border-dashed rounded-2xl md:rounded-[2.5rem] p-4 md:p-8 mb-6 md:mb-10 flex flex-wrap gap-2 md:gap-4 items-center justify-center transition-colors duration-300 ${status === 'error' ? 'bg-red-50 border-red-200' : 'bg-white border-slate-200'}`}>
+            {/* FIXED: Added dir="rtl" so the Arabic words flow Right-to-Left natively */}
+            <div 
+              dir="rtl" 
+              className={`min-h-[140px] md:min-h-[180px] border-2 md:border-4 border-dashed rounded-2xl md:rounded-[2.5rem] p-4 md:p-8 mb-6 md:mb-10 flex flex-wrap gap-2 md:gap-4 items-center justify-center transition-colors duration-300 ${status === 'error' ? 'bg-red-50 border-red-200' : 'bg-white border-slate-200'}`}
+            >
                 <AnimatePresence>
                     {selectedWords.length === 0 && (
                     <motion.span 
+                        dir="ltr" // Kept LTR so English placeholder displays properly
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                         className="text-slate-400 font-medium flex items-center gap-2 text-sm md:text-lg text-center"
                     >

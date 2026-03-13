@@ -7,8 +7,8 @@ import { useUser } from '@/context/UserContext';
 import { SURAHS, Level, Word, Surah } from '@/lib/data';
 import { 
   ArrowRight, X, Heart, Users, Sun, Star, 
-  Volume2, PauseCircle, Check, Target, Zap, Award, Flame, Shield,
-  Mic, Square, Loader2, Lock
+  Volume2, PauseCircle, Check, Target, Zap, Award, Flame, Shield, Moon, Cloud, Book, Feather, Mountain,
+  Mic, Square, Loader2
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -20,7 +20,12 @@ const IconMap: Record<string, any> = {
   Star: Star,
   Flame: Flame,
   Zap: Zap,
-  Shield: Shield
+  Shield: Shield,
+  Moon: Moon,
+  Cloud: Cloud,
+  Book: Book,
+  Feather: Feather,
+  Mountain: Mountain
 };
 
 // Distinct colors for words
@@ -173,7 +178,7 @@ const RecitationTester = ({ correctAyah, onScore }: { correctAyah: string, onSco
         </motion.button>
 
         <p className="text-slate-500 text-xs md:text-sm mt-3 md:mt-4 font-medium text-center">
-          {isAnalyzing ? "Analyzing pronunciation..." : isRecording ? "Tap to stop recording" : "Tap to record"}
+          {isAnalyzing ? "Analyzing pronunciation..." : isRecording ? "Tap to stop recording" : "Tap to record (Optional)"}
         </p>
 
         <AnimatePresence>
@@ -187,11 +192,6 @@ const RecitationTester = ({ correctAyah, onScore }: { correctAyah: string, onSco
                 {score}%
               </div>
               <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] md:text-xs mt-1">Accuracy</p>
-              {score < 80 && (
-                <p className="text-rose-500 text-[10px] md:text-xs font-bold mt-2 bg-rose-50 px-3 py-1 rounded-full inline-block">
-                  Need 80%+ to unlock Quiz
-                </p>
-              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -200,9 +200,8 @@ const RecitationTester = ({ correctAyah, onScore }: { correctAyah: string, onSco
   );
 };
 
-
 // 2. LEARNING VIEW (SPLIT SCREEN)
-const LearningView = ({ level, onReady }: { level: Level, onReady: () => void }) => {
+const LearningView = ({ level, onReady, currentIndex, totalLevels }: { level: Level, onReady: () => void, currentIndex: number, totalLevels: number }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [bestScore, setBestScore] = useState<number | null>(null); 
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -229,8 +228,6 @@ const LearningView = ({ level, onReady }: { level: Level, onReady: () => void })
   const handleScoreUpdate = (score: number) => {
     setBestScore(prev => (prev === null ? score : Math.max(prev, score)));
   };
-
-  const isQuizUnlocked = bestScore !== null && bestScore >= 80;
 
   return (
     <div className="flex flex-col lg:flex-row h-full w-full overflow-y-auto lg:overflow-hidden relative">
@@ -317,27 +314,19 @@ const LearningView = ({ level, onReady }: { level: Level, onReady: () => void })
 
          {/* Sticky Footer */}
          <div className="sticky bottom-0 lg:absolute left-0 right-0 p-4 md:p-6 lg:p-8 bg-white/95 backdrop-blur border-t border-slate-100 z-20 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] lg:shadow-none mt-auto">
-            <motion.button 
-                whileHover={isQuizUnlocked ? { scale: 1.02 } : {}}
-                whileTap={isQuizUnlocked ? { scale: 0.98 } : {}}
-                onClick={() => { if(isQuizUnlocked) { stopAudio(); onReady(); } }}
-                disabled={!isQuizUnlocked}
-                className={clsx(
-                  "w-full max-w-md mx-auto py-3 md:py-4 rounded-xl md:rounded-2xl font-bold text-base md:text-xl transition-all flex items-center justify-center gap-2 md:gap-3 uppercase tracking-wide",
-                  isQuizUnlocked 
-                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200 hover:shadow-emerald-300"
-                    : "bg-slate-100 text-slate-400 border-2 border-slate-200 cursor-not-allowed"
-                )}
-            >
-                {isQuizUnlocked ? (
-                  <><span>Start Quiz</span> <ArrowRight className="w-5 h-5 md:w-6 md:h-6" /></>
-                ) : (
-                  <>
-                    <Lock className="w-4 h-4 md:w-5 md:h-5 text-slate-300" />
-                    <span className="text-xs md:text-sm">Score 80%+ to Unlock</span>
-                  </>
-                )}
-            </motion.button>
+            <div className="w-full max-w-md mx-auto flex flex-col items-center">
+                <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 md:mb-3">
+                    Ayah {currentIndex + 1} of {totalLevels}
+                </p>
+                <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => { stopAudio(); onReady(); }}
+                    className="w-full py-3 md:py-4 rounded-xl md:rounded-2xl font-bold text-base md:text-xl transition-all flex items-center justify-center gap-2 md:gap-3 uppercase tracking-wide bg-emerald-600 text-white shadow-lg shadow-emerald-200 hover:shadow-emerald-300"
+                >
+                    <span>Start Quiz</span> <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />
+                </motion.button>
+            </div>
          </div>
       </div>
 
@@ -346,7 +335,7 @@ const LearningView = ({ level, onReady }: { level: Level, onReady: () => void })
 };
 
 // 3. QUIZ VIEW (Centered)
-const QuizView = ({ level, onNext, onMistake }: { level: Level, onNext: () => void, onMistake: () => void }) => {
+const QuizView = ({ level, onNext, onMistake, currentIndex, totalLevels }: { level: Level, onNext: () => void, onMistake: () => void, currentIndex: number, totalLevels: number }) => {
     type QuizWord = Word & { uniqueId: number; used: boolean; colorIdx: number };
 
     const [selectedWords, setSelectedWords] = useState<QuizWord[]>([]);
@@ -400,7 +389,7 @@ const QuizView = ({ level, onNext, onMistake }: { level: Level, onNext: () => vo
   
       if (currentCorrect === userAttempt) {
         setStatus('success');
-        playHintAudio();
+        // Removed playHintAudio() here so it doesn't play automatically
       } else {
         setStatus('error');
         onMistake();
@@ -425,7 +414,6 @@ const QuizView = ({ level, onNext, onMistake }: { level: Level, onNext: () => vo
                 </motion.button>
             </div>
             
-            {/* FIXED: Added dir="rtl" so the Arabic words flow Right-to-Left natively */}
             <div 
               dir="rtl" 
               className={`min-h-[140px] md:min-h-[180px] border-2 md:border-4 border-dashed rounded-2xl md:rounded-[2.5rem] p-4 md:p-8 mb-6 md:mb-10 flex flex-wrap gap-2 md:gap-4 items-center justify-center transition-colors duration-300 ${status === 'error' ? 'bg-red-50 border-red-200' : 'bg-white border-slate-200'}`}
@@ -433,7 +421,7 @@ const QuizView = ({ level, onNext, onMistake }: { level: Level, onNext: () => vo
                 <AnimatePresence>
                     {selectedWords.length === 0 && (
                     <motion.span 
-                        dir="ltr" // Kept LTR so English placeholder displays properly
+                        dir="ltr"
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                         className="text-slate-400 font-medium flex items-center gap-2 text-sm md:text-lg text-center"
                     >
@@ -501,8 +489,17 @@ const QuizView = ({ level, onNext, onMistake }: { level: Level, onNext: () => vo
           <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="w-full sm:flex-1 flex justify-center sm:justify-start">
                <AnimatePresence mode='wait'>
+                    {status === 'playing' && (
+                        <motion.div key="playing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-3 md:gap-4 opacity-60">
+                            <div className="w-10 h-10 md:w-14 md:h-14 shrink-0 rounded-full border-2 border-slate-300 flex items-center justify-center text-slate-400"><Target className="w-5 h-5 md:w-6 md:h-6" /></div>
+                            <div>
+                                <h3 className="text-slate-600 font-bold text-base md:text-lg">Ayah {currentIndex + 1} of {totalLevels}</h3>
+                                <p className="text-slate-400 font-medium text-xs md:text-sm">Build the sentence to continue</p>
+                            </div>
+                        </motion.div>
+                    )}
                     {status === 'success' && (
-                        <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex items-center gap-3 md:gap-4">
+                        <motion.div key="success" initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex items-center gap-3 md:gap-4">
                             <div className="w-10 h-10 md:w-14 md:h-14 shrink-0 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-200"><Check className="w-5 h-5 md:w-8 md:h-8" /></div>
                             <div>
                                 <h3 className="text-emerald-800 font-bold text-lg md:text-xl">Excellent!</h3>
@@ -511,7 +508,7 @@ const QuizView = ({ level, onNext, onMistake }: { level: Level, onNext: () => vo
                         </motion.div>
                     )}
                     {status === 'error' && (
-                        <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex items-center gap-3 md:gap-4">
+                        <motion.div key="error" initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex items-center gap-3 md:gap-4">
                             <div className="w-10 h-10 md:w-14 md:h-14 shrink-0 bg-red-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-red-200"><X className="w-5 h-5 md:w-8 md:h-8" /></div>
                             <div>
                                 <h3 className="text-red-800 font-bold text-lg md:text-xl">Incorrect</h3>
@@ -660,13 +657,19 @@ export default function LearnPage() {
                <X className="w-5 h-5 md:w-6 md:h-6 text-slate-400" />
             </button>
             
-            <div className="flex-1 max-w-md mx-4 md:mx-6 h-2 md:h-3 bg-slate-100 rounded-full overflow-hidden">
-               <motion.div 
-                 initial={{ width: 0 }}
-                 animate={{ width: `${progress}%` }}
-                 transition={{ duration: 0.5 }}
-                 className="h-full bg-emerald-500 rounded-full"
-               ></motion.div>
+            <div className="flex-1 max-w-md mx-4 md:mx-6 flex flex-col">
+               <div className="flex justify-between items-end mb-1.5 px-1">
+                 <span className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider truncate mr-2">{surah.title}</span>
+                 <span className="text-[10px] md:text-xs font-bold text-emerald-500 uppercase tracking-wider shrink-0">{currentLevelIndex + 1} / {surah.levels.length}</span>
+               </div>
+               <div className="h-2 md:h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+                 <motion.div 
+                   initial={{ width: 0 }}
+                   animate={{ width: `${progress}%` }}
+                   transition={{ duration: 0.5 }}
+                   className="h-full bg-emerald-500 rounded-full"
+                 ></motion.div>
+               </div>
             </div>
 
             <div className="flex items-center text-rose-500 font-bold text-sm md:text-lg gap-1.5 md:gap-2 bg-rose-50 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full shrink-0">
@@ -680,11 +683,22 @@ export default function LearnPage() {
             <AnimatePresence mode='wait'>
                 {mode === 'learn' ? (
                     <motion.div key="learn" className="h-full w-full absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                        <LearningView level={currentLevel} onReady={() => setMode('quiz')} />
+                        <LearningView 
+                            level={currentLevel} 
+                            onReady={() => setMode('quiz')} 
+                            currentIndex={currentLevelIndex} 
+                            totalLevels={surah.levels.length} 
+                        />
                     </motion.div>
                 ) : (
                     <motion.div key="quiz" className="h-full w-full absolute inset-0" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }}>
-                        <QuizView level={currentLevel} onNext={handleNext} onMistake={handleMistake} />
+                        <QuizView 
+                            level={currentLevel} 
+                            onNext={handleNext} 
+                            onMistake={handleMistake} 
+                            currentIndex={currentLevelIndex} 
+                            totalLevels={surah.levels.length} 
+                        />
                     </motion.div>
                 )}
             </AnimatePresence>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
 import { SURAHS } from '@/lib/data';
@@ -8,24 +8,47 @@ import { DownloadCertificate } from '@/app/components/Certificate';
 import { 
   Users, Sun, Star, Lock, Check, Award, 
   Zap, Flame, Shield, Home, Laptop, X, Heart, 
-  BookOpen,
-  Sparkles
+  BookOpen, Sparkles, Moon, Cloud, Book, Feather, Mountain
 } from 'lucide-react';
 import clsx from 'clsx';
 
-const IconMap = {
+const IconMap: Record<string, any> = {
   Users: Users,
   Sun: Sun,
   Star: Star,
   Flame: Flame,
   Zap: Zap,
-  Shield: Shield
+  Shield: Shield,
+  Moon: Moon,
+  Cloud: Cloud,
+  Book: Book,
+  Heart: Heart,
+  Feather: Feather,
+  Mountain: Mountain
 };
 
 export default function Dashboard() {
   const { user } = useUser();
   const router = useRouter();
   const [showCertificateModal, setShowCertificateModal] = useState(false);
+
+  // --- INSPIRING QUOTES LOGIC ---
+  const quotes = [
+    "Every letter you recite brings a reward.",
+    "The Quran is a light for your heart.",
+    "Small, consistent steps build a heavy scale.",
+    "Your journey to Allah begins with His words.",
+    "Illuminate your path with the final Juz.",
+    "Seek knowledge, from the cradle to the grave."
+  ];
+  
+  const [quote, setQuote] = useState("Continue your journey through Juz 30.");
+
+  // Pick a random quote only on the client side to avoid hydration mismatches
+  useEffect(() => {
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    setQuote(randomQuote);
+  }, []);
 
   // Safety check
   if (!user.hasOnboarded) {
@@ -34,41 +57,112 @@ export default function Dashboard() {
   }
 
   // --- STATS LOGIC ---
-  const isUnlocked = (index: number) => {
-    if (index === 0) return true;
-    return user.completedSurahs.includes(SURAHS[index - 1].id);
-  };
-
   const isCompleted = (id: string) => user.completedSurahs.includes(id);
   const completedCount = user.completedSurahs.length;
   const totalCount = SURAHS.length;
   const allCompleted = completedCount === totalCount;
   const remaining = totalCount - completedCount;
 
-  // --- MAP CONFIGURATION ---
-  // Coordinates in percentage (0-100) relative to container
-  const positions = [
-    { x: 50, y: 10 },  // 1. Nas
-    { x: 25, y: 22 },  // 2. Falaq (Left)
-    { x: 75, y: 34 },  // 3. Ikhlas (Right)
-    { x: 30, y: 46 },  // 4. Masad (Left)
-    { x: 70, y: 58 },  // 5. Nasr (Right)
-    { x: 40, y: 70 },  // 6. Kafirun (Left)
-    { x: 50, y: 85 }   // 7. Trophy (Center)
-  ];
+  // --- MAP CONFIGURATION (Zigzag layout) ---
+  const leftX = 22;   // left column X (%)
+  const rightX = 78;  // right column X (%)
+  const topY = 4;     // top Y (%)
+  const bottomY = 88; // bottom Y (%) - leave space for trophy
+  const total = totalCount;
+  const gap = (bottomY - topY) / Math.max(1, total - 1);
+
+  const positions = Array.from({ length: total }, (_, i) => {
+    const y = topY + i * gap;
+    const x = i % 2 === 0 ? leftX : rightX;
+    return { x, y };
+  });
+
+  const trophyPos = { x: 50, y: 96 }; 
 
   // --- DYNAMIC PATH GENERATOR ---
   const pathData = useMemo(() => {
-    if (positions.length < 2) return "";
-    let d = `M ${positions[0].x} ${positions[0].y}`;
-    for (let i = 0; i < positions.length - 1; i++) {
-      const current = positions[i];
-      const next = positions[i + 1];
+    const pts = [...positions, trophyPos];
+    if (pts.length < 2) return "";
+    let d = `M ${pts[0].x} ${pts[0].y}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const current = pts[i];
+      const next = pts[i + 1];
       const midY = (current.y + next.y) / 2;
       d += ` C ${current.x} ${midY}, ${next.x} ${midY}, ${next.x} ${next.y}`;
     }
     return d;
-  }, [positions]);
+  }, [positions, trophyPos]);
+
+  // --- REUSABLE SIDEBAR CONTENT (Shown on Right for Desktop, Bottom for Mobile) ---
+  const renderSidebarContent = () => (
+    <div className="space-y-6">
+       
+       {/* Stats Cards */}
+       <div className="flex gap-4">
+          <div className="flex-1 bg-white border-2 border-slate-100 rounded-2xl p-4 flex flex-col items-center shadow-sm">
+              <Flame className="w-8 h-8 text-orange-500 mb-2 fill-orange-100" />
+              <span className="text-xl font-bold text-slate-700">{user.streak}</span>
+              <span className="text-xs text-slate-400 uppercase font-bold">Streak</span>
+          </div>
+          <div className="flex-1 bg-white border-2 border-slate-100 rounded-2xl p-4 flex flex-col items-center shadow-sm">
+              <Zap className="w-8 h-8 text-yellow-500 mb-2 fill-yellow-100" />
+              <span className="text-xl font-bold text-slate-700">{user.xp}</span>
+              <span className="text-xs text-slate-400 uppercase font-bold">XP</span>
+          </div>
+       </div>
+       
+       {/* Progress Card (Hidden on Mobile because it's in the Hero section now) */}
+       <div className="hidden md:block border-2 border-slate-100 rounded-2xl p-6 bg-white shadow-sm">
+          <h3 className="font-bold text-slate-700 mb-4 uppercase tracking-wide text-xs">Your Progress</h3>
+          <div className="flex items-center gap-3">
+             <Shield className="w-10 h-10 text-emerald-500" />
+             <div className="flex-1">
+                <p className="text-sm font-bold text-slate-600">{completedCount} / {totalCount} Surahs</p>
+                <div className="h-2 bg-slate-100 rounded-full mt-2">
+                   <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${(completedCount / totalCount) * 100}%` }}></div>
+                </div>
+             </div>
+          </div>
+       </div>
+
+       <div 
+          onClick={() => router.push('/names')}
+          className="border-2 border-slate-100 rounded-2xl p-6 bg-white shadow-sm cursor-pointer hover:border-emerald-300 hover:shadow-md transition-all group"
+       >
+          <div className="flex items-center gap-4">
+             <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
+                <Sparkles className="w-6 h-6 text-emerald-500 group-hover:text-white transition-colors" />
+             </div>
+             <div>
+                <h3 className="font-bold text-slate-800 text-sm">99 Names of Allah</h3>
+                <p className="text-xs text-slate-400 font-medium">Learn & Reflect</p>
+             </div>
+          </div>
+       </div>
+       
+       {/* App Info & Credits */}
+       <div className="border-2 border-slate-100 rounded-2xl p-6 bg-gradient-to-b from-slate-50 to-white flex flex-col items-center text-center shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-100 rounded-full blur-2xl -mr-10 -mt-10 opacity-50 pointer-events-none"></div>
+          
+          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-4 shadow-md border border-slate-100 z-10">
+             <BookOpen className="w-6 h-6 text-emerald-500" />
+          </div>
+          
+          <h3 className="font-black text-slate-800 text-lg mb-1 z-10">JuzJourney</h3>
+          <p className="text-slate-500 text-sm font-medium italic mb-6 leading-relaxed z-10 px-2">
+            "Your path to understanding the final 30th."
+          </p>
+          
+          <div className="w-full h-px bg-slate-200 mb-5"></div>
+          
+          <p className="text-xs text-slate-400 font-bold tracking-widest uppercase mb-1">Created By</p>
+          <p className="text-sm font-bold text-emerald-600 flex items-center gap-1">
+             Ahsan Farabi
+          </p>
+       </div>
+       
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20 md:pb-0 font-sans text-slate-900 flex flex-row">
@@ -106,7 +200,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Mobile Header */}
+      {/* Mobile Header (Sticky tracking stats) */}
       <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur z-30 p-4 border-b border-slate-100 flex justify-between items-center md:hidden">
         <div className="flex items-center gap-2">
            <Zap className="w-5 h-5 text-yellow-500 fill-current" />
@@ -122,19 +216,44 @@ export default function Dashboard() {
       <main className="flex-1 flex justify-center">
         <div className="w-full max-w-md md:max-w-2xl px-4 py-20 md:py-12">
             
-            {/* Welcome Banner */}
-            <div className="hidden md:block bg-emerald-600 rounded-3xl p-8 mb-10 text-white shadow-lg shadow-emerald-200 relative overflow-hidden">
+            {/* Welcome Banner - DYNAMIC & GRADIENT - BIGGER HEIGHT */}
+            <div className="bg-gradient-to-br from-emerald-500 to-teal-700 rounded-[2rem] p-8 md:p-10 mb-10 text-white shadow-lg shadow-emerald-200 relative overflow-hidden group min-h-[220px] flex flex-col justify-center">
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
+                
                 <div className="relative z-10">
-                    <h2 className="font-extrabold text-2xl mb-2">Welcome back, {user.name}!</h2>
-                    <p className="text-emerald-100 mb-6 max-w-sm">Continue your journey through Juz 30.</p>
+                    <h2 className="font-extrabold text-3xl md:text-4xl mb-3 drop-shadow-sm">
+                        Welcome back, {user.name}!
+                    </h2>
+                    <p className="text-teal-50 text-base md:text-lg max-w-[280px] md:max-w-md drop-shadow-sm leading-relaxed mb-6 animate-in fade-in duration-700">
+                        {quote}
+                    </p>
+                    
+                    {/* MOBILE ONLY: Embedded Progress Bar inside Hero Section */}
+                    <div className="block md:hidden bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30">
+                       <div className="flex justify-between items-center mb-2">
+                          <span className="text-xs font-bold text-teal-50 uppercase tracking-wider">Overall Progress</span>
+                          <span className="text-sm font-black text-white">{completedCount} / {totalCount}</span>
+                       </div>
+                       <div className="h-3 bg-teal-900/40 rounded-full overflow-hidden">
+                          <div 
+                             className="h-full bg-white rounded-full transition-all duration-1000 ease-out" 
+                             style={{ width: `${(completedCount / totalCount) * 100}%` }}
+                          ></div>
+                       </div>
+                    </div>
+
                 </div>
-                <Award className="absolute -right-6 -bottom-10 w-48 h-48 text-emerald-500 opacity-50 rotate-12" />
+                
+                <Award className="absolute -right-4 -bottom-6 w-40 h-40 md:-right-6 md:-bottom-10 md:w-56 md:h-56 text-white opacity-10 rotate-12 group-hover:rotate-6 group-hover:scale-110 transition-transform duration-700 pointer-events-none" />
             </div>
 
             {/* THE INTERACTIVE MAP */}
-            <div className="relative w-full h-[800px] my-8">
+            <div 
+               className="relative w-full" 
+               style={{ height: `${Math.max(800, totalCount * 130)}px` }}
+            >
                
-               {/* 1. The Connector Path */}
+               {/* 1. The Connector Path - THINNER LINE */}
                <svg className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
                  <defs>
                     <linearGradient id="pathGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -146,7 +265,7 @@ export default function Dashboard() {
                    d={pathData}
                    fill="none" 
                    stroke="url(#pathGradient)" 
-                   strokeWidth="1.5" 
+                   strokeWidth="0.8" /* CHANGED: Thinner line */
                    strokeDasharray="4"
                    strokeLinecap="round"
                    className="opacity-40"
@@ -155,10 +274,9 @@ export default function Dashboard() {
 
                {/* 2. Surah Nodes */}
                {SURAHS.map((surah, index) => {
-                 const unlocked = isUnlocked(index);
                  const completed = isCompleted(surah.id);
                  const pos = positions[index];
-                 const Icon = IconMap[surah.iconName];
+                 const Icon = IconMap[surah.iconName] || Star; // Fallback to Star if icon missing
 
                  return (
                    <div 
@@ -168,22 +286,16 @@ export default function Dashboard() {
                    >
                      <div className="flex flex-col items-center">
                        <button
-                         onClick={() => unlocked && router.push(`/learn/${surah.id}`)}
-                         disabled={!unlocked}
+                         onClick={() => router.push(`/learn/${surah.id}`)}
                          className={clsx(
-                           "w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center border-[6px] shadow-[0_8px_0_rgba(0,0,0,0.1)] active:translate-y-2 active:shadow-none transition-all relative z-10",
-                           completed ? 'bg-emerald-500 border-emerald-600' : 
-                           unlocked ? `bg-gradient-to-br ${surah.themeGradient} border-white hover:scale-110` : 
-                           'bg-slate-200 border-slate-300 cursor-not-allowed'
+                           "w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center border-[6px] shadow-[0_8px_0_rgba(0,0,0,0.1)] active:translate-y-2 active:shadow-none transition-all relative z-10 hover:scale-110 cursor-pointer",
+                           completed 
+                             ? `bg-gradient-to-br ${surah.themeGradient} border-white` 
+                             : 'bg-slate-200 border-slate-300'
                          )}
                        >
-                         {completed ? (
-                            <Check className="w-10 h-10 md:w-12 md:h-12 text-white animate-in zoom-in stroke-[3]" />
-                         ) : unlocked ? (
-                            <Icon className="w-8 h-8 md:w-10 md:h-10 text-white" />
-                         ) : (
-                            <Lock className="w-6 h-6 md:w-8 md:h-8 text-slate-400" />
-                         )}
+                         {/* Show the specific icon. White if completed, gray if not. */}
+                         <Icon className={clsx("w-8 h-8 md:w-10 md:h-10", completed ? "text-white" : "text-slate-400")} />
                          
                          {/* Stars for completion */}
                          {completed && ( 
@@ -196,11 +308,8 @@ export default function Dashboard() {
                        </button>
                        
                        {/* Label */}
-                       <div className={clsx(
-                           "mt-4 bg-white px-4 py-2 rounded-xl border-2 shadow-sm text-center transform transition-all whitespace-nowrap z-20", 
-                           unlocked ? 'border-slate-100 group-hover:scale-105' : 'border-transparent opacity-50'
-                       )}>
-                         <h3 className={clsx("text-sm font-bold", unlocked ? 'text-slate-800' : 'text-slate-400')}>
+                       <div className="mt-4 bg-white px-4 py-2 rounded-xl border-2 shadow-sm text-center transform transition-all whitespace-nowrap z-20 border-slate-100 group-hover:scale-105">
+                         <h3 className={clsx("text-sm font-bold", completed ? 'text-slate-800' : 'text-slate-500')}>
                             {surah.title}
                          </h3>
                        </div>
@@ -212,7 +321,7 @@ export default function Dashboard() {
                {/* 3. Final Trophy Node */}
                <div 
                  className="absolute transform -translate-x-1/2 -translate-y-1/2" 
-                 style={{ left: `${positions[positions.length - 1].x}%`, top: `${positions[positions.length - 1].y}%` }}
+                 style={{ left: `${trophyPos.x}%`, top: `${trophyPos.y}%` }}
                >
                  <div className="flex flex-col items-center group">
                      <button
@@ -235,81 +344,22 @@ export default function Dashboard() {
                </div>
 
             </div>
+
+            {/* MOBILE ONLY: Render Sidebar Content Below Dashboard */}
+            <div className="block lg:hidden mt-16 mb-8 w-full border-t-2 border-slate-100 pt-8">
+               <h2 className="text-xl font-extrabold text-slate-800 mb-6 text-center">Your Dashboard</h2>
+               {renderSidebarContent()}
+            </div>
+
         </div>
       </main>
 
-      {/* RIGHT SIDEBAR (Fixed Width, Sticky) */}
+      {/* DESKTOP ONLY: Fixed Right Sidebar */}
       <aside className="hidden lg:block w-80 p-8 h-screen sticky top-0 bg-white border-l border-slate-200 flex-shrink-0 overflow-y-auto">
-        <div className="space-y-6">
-           
-           {/* Stats Cards */}
-           <div className="flex gap-4">
-              <div className="flex-1 bg-white border-2 border-slate-100 rounded-2xl p-4 flex flex-col items-center shadow-sm">
-                  <Flame className="w-8 h-8 text-orange-500 mb-2 fill-orange-100" />
-                  <span className="text-xl font-bold text-slate-700">{user.streak}</span>
-                  <span className="text-xs text-slate-400 uppercase font-bold">Streak</span>
-              </div>
-              <div className="flex-1 bg-white border-2 border-slate-100 rounded-2xl p-4 flex flex-col items-center shadow-sm">
-                  <Zap className="w-8 h-8 text-yellow-500 mb-2 fill-yellow-100" />
-                  <span className="text-xl font-bold text-slate-700">{user.xp}</span>
-                  <span className="text-xs text-slate-400 uppercase font-bold">XP</span>
-              </div>
-           </div>
-           
-           {/* Progress Card */}
-           <div className="border-2 border-slate-100 rounded-2xl p-6 bg-white shadow-sm">
-              <h3 className="font-bold text-slate-700 mb-4 uppercase tracking-wide text-xs">Your Progress</h3>
-              <div className="flex items-center gap-3">
-                 <Shield className="w-10 h-10 text-emerald-500" />
-                 <div className="flex-1">
-                    <p className="text-sm font-bold text-slate-600">{completedCount} / {totalCount} Surahs</p>
-                    <div className="h-2 bg-slate-100 rounded-full mt-2">
-                       <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${(completedCount / totalCount) * 100}%` }}></div>
-                    </div>
-                 </div>
-              </div>
-           </div>
-
-           <div 
-              onClick={() => router.push('/names')}
-              className="border-2 border-slate-100 rounded-2xl p-6 bg-white shadow-sm cursor-pointer hover:border-emerald-300 hover:shadow-md transition-all group"
-           >
-              <div className="flex items-center gap-4">
-                 <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
-                    <Sparkles className="w-6 h-6 text-emerald-500 group-hover:text-white transition-colors" />
-                 </div>
-                 <div>
-                    <h3 className="font-bold text-slate-800 text-sm">99 Names of Allah</h3>
-                    <p className="text-xs text-slate-400 font-medium">Learn & Reflect</p>
-                 </div>
-              </div>
-           </div>
-           
-           {/* App Info & Credits */}
-           <div className="border-2 border-slate-100 rounded-2xl p-6 bg-gradient-to-b from-slate-50 to-white flex flex-col items-center text-center shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-100 rounded-full blur-2xl -mr-10 -mt-10 opacity-50 pointer-events-none"></div>
-              
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-4 shadow-md border border-slate-100 z-10">
-                 <BookOpen className="w-6 h-6 text-emerald-500" />
-              </div>
-              
-              <h3 className="font-black text-slate-800 text-lg mb-1 z-10">JuzJourney</h3>
-              <p className="text-slate-500 text-sm font-medium italic mb-6 leading-relaxed z-10 px-2">
-                "Your path to understanding the final 30th."
-              </p>
-              
-              <div className="w-full h-px bg-slate-200 mb-5"></div>
-              
-              <p className="text-xs text-slate-400 font-bold tracking-widest uppercase mb-1">Created By</p>
-              <p className="text-sm font-bold text-emerald-600 flex items-center gap-1">
-                 Ahsan Farabi
-              </p>
-           </div>
-           
-        </div>
+        {renderSidebarContent()}
       </aside>
 
-      {/* Mobile Nav */}
+      {/* Mobile Nav Footer */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-slate-200 py-3 px-6 flex justify-around items-center z-40 pb-safe">
         <button onClick={() => router.push('/dashboard')} className="flex flex-col items-center gap-1 text-emerald-500">
           <Home className="w-6 h-6" />

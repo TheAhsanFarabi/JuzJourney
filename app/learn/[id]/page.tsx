@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, ElementType } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@/context/UserContext';
 import { SURAHS, Level, Word, Surah } from '@/lib/data';
 import { 
-  ArrowRight, X, Heart, Users, Sun, Star, 
+  ArrowRight, ArrowLeft, X, Heart, Users, Sun, Star, 
   Volume2, PauseCircle, Check, Target, Zap, Award, Flame, Shield, Moon, Cloud, Book, Feather, Mountain,
   Mic, Square, Loader2
 } from 'lucide-react';
@@ -14,21 +14,11 @@ import clsx from 'clsx';
 
 // --- CONSTANTS & UTILS ---
 
-const IconMap: Record<string, any> = {
-  Users: Users,
-  Sun: Sun,
-  Star: Star,
-  Flame: Flame,
-  Zap: Zap,
-  Shield: Shield,
-  Moon: Moon,
-  Cloud: Cloud,
-  Book: Book,
-  Feather: Feather,
-  Mountain: Mountain
+const IconMap: Record<string, ElementType> = {
+  Users, Sun, Star, Flame, Zap, Shield,
+  Moon, Cloud, Book, Feather, Mountain
 };
 
-// Distinct colors for words
 const WORD_PALETTE = [
   { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-800', badge: 'bg-emerald-100 text-emerald-700' },
   { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800', badge: 'bg-blue-100 text-blue-700' },
@@ -40,49 +30,71 @@ const WORD_PALETTE = [
 
 const getColor = (index: number) => WORD_PALETTE[index % WORD_PALETTE.length];
 
+const MOTIVATION_QUOTES = [
+  "MashaAllah, you're doing amazing!",
+  "Every letter you recite is a good deed.",
+  "Allah loves consistency, no matter how small.",
+  "You are one step closer to understanding His words.",
+  "Keep going! Your future self will thank you.",
+  "Seek knowledge, from the cradle to the grave."
+];
+
+// --- CUSTOM CONFETTI COMPONENT ---
+const Confetti = () => {
+  const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
+  const pieces = Array.from({ length: 80 }).map((_, i) => ({
+    id: i,
+    x: Math.random() * 100, // random start X position (vw)
+    delay: Math.random() * 0.5,
+    duration: Math.random() * 2 + 2,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    size: Math.random() * 10 + 6,
+    shape: Math.random() > 0.5 ? '50%' : '2px' // mix of circles and squares
+  }));
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[100] overflow-hidden">
+      {pieces.map(p => (
+        <motion.div
+          key={p.id}
+          initial={{ x: `${p.x}vw`, y: '-10vh', rotate: 0 }}
+          animate={{ y: '110vh', rotate: 360, x: `${p.x + (Math.random() * 20 - 10)}vw` }}
+          transition={{ duration: p.duration, delay: p.delay, ease: 'linear' }}
+          style={{
+            position: 'absolute',
+            width: p.size,
+            height: p.size,
+            backgroundColor: p.color,
+            borderRadius: p.shape
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
 // --- COMPONENTS ---
 
 // 1. STORY SCREEN
 const StoryIntro = ({ surah, onStart }: { surah: Surah, onStart: () => void }) => {
   const Icon = IconMap[surah.iconName];
   return (
-    <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }}
-      className="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4 md:p-6"
-    >
-      <motion.div 
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", duration: 0.5 }}
-        className="bg-white rounded-[2rem] max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col md:flex-row"
-      >
-        {/* Visual Side */}
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4 md:p-6">
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", duration: 0.5 }} className="bg-white rounded-[2rem] max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col md:flex-row">
         <div className={`py-12 md:h-auto md:w-1/2 bg-gradient-to-br ${surah.themeGradient} flex flex-col items-center justify-center relative px-6 md:px-10 text-center shrink-0`}>
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-30"></div>
-          <motion.div 
-            animate={{ y: [0, -10, 0] }}
-            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-            className="w-24 h-24 md:w-32 md:h-32 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border-4 border-white/30 mb-4 md:mb-6 shadow-lg"
-          >
+          <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="w-24 h-24 md:w-32 md:h-32 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border-4 border-white/30 mb-4 md:mb-6 shadow-lg">
             <Icon className="w-12 h-12 md:w-16 md:h-16 text-white" />
           </motion.div>
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-2 drop-shadow-md">{surah.title}</h2>
           <p className="text-white/90 font-medium text-base md:text-lg tracking-wide uppercase">{surah.meaning}</p>
         </div>
-        
-        {/* Content Side */}
         <div className="p-6 md:p-10 md:w-1/2 flex flex-col justify-center bg-slate-50">
           <div className="mb-8">
             <h3 className="font-bold text-slate-400 uppercase tracking-widest text-xs mb-3 md:mb-4">The Context</h3>
             <p className="text-slate-700 leading-relaxed text-base md:text-lg font-medium">{surah.story}</p>
           </div>
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={onStart}
-            className="w-full py-4 md:py-5 bg-emerald-600 text-white rounded-2xl font-bold text-lg shadow-lg shadow-emerald-200 hover:shadow-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-3"
-          >
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onStart} className="w-full py-4 md:py-5 bg-emerald-600 text-white rounded-2xl font-bold text-lg shadow-lg shadow-emerald-200 hover:shadow-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-3">
             Start Lesson <ArrowRight className="w-5 h-5" />
           </motion.button>
         </div>
@@ -96,31 +108,30 @@ const RecitationTester = ({ correctAyah, onScore }: { correctAyah: string, onSco
   const [isRecording, setIsRecording] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [score, setScore] = useState<number | null>(null);
+  const [micError, setMicError] = useState<string | null>(null);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  useEffect(() => {
-    setScore(null);
+  useEffect(() => { 
+    setScore(null); 
+    setMicError(null);
   }, [correctAyah]);
 
   const startRecording = async () => {
     try {
+      setMicError(null);
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
-      };
-
+      mediaRecorder.ondataavailable = (event) => audioChunksRef.current.push(event.data);
       mediaRecorder.onstop = processAudio;
       mediaRecorder.start();
       setIsRecording(true);
       setScore(null);
     } catch (err) {
-      alert("Microphone access denied! Please allow microphone permissions.");
+      setMicError("Microphone access denied. Please check your permissions.");
     }
   };
 
@@ -142,12 +153,11 @@ const RecitationTester = ({ correctAyah, onScore }: { correctAyah: string, onSco
     try {
       const res = await fetch('/api/score', { method: 'POST', body: formData });
       const data = await res.json();
-      
       setScore(data.score);
       onScore(data.score); 
     } catch (error) {
       console.error("Failed to analyze audio", error);
-      alert("Failed to analyze recitation. Please try again.");
+      setMicError("Failed to analyze recitation. Please try again.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -157,40 +167,17 @@ const RecitationTester = ({ correctAyah, onScore }: { correctAyah: string, onSco
     <div className="flex flex-col items-center mt-6 md:mt-10 w-full px-4 md:px-0">
       <div className="flex flex-col items-center p-5 md:p-6 bg-white/60 backdrop-blur rounded-3xl border-2 border-emerald-100 shadow-sm w-full max-w-sm">
         <h3 className="font-bold text-slate-500 mb-4 text-xs md:text-sm uppercase tracking-widest text-center">Test Your Recitation</h3>
-        
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={isRecording ? stopRecording : startRecording}
-          disabled={isAnalyzing}
-          className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-lg transition-colors ${
-            isRecording 
-              ? 'bg-rose-500 text-white animate-pulse shadow-rose-200' 
-              : 'bg-emerald-500 text-white shadow-emerald-200 hover:bg-emerald-600'
-          } ${isAnalyzing ? 'bg-slate-400 cursor-not-allowed' : ''}`}
-        >
-          {isAnalyzing ? (
-            <Loader2 className="w-6 h-6 md:w-8 md:h-8 animate-spin" />
-          ) : isRecording ? (
-            <Square className="w-6 h-6 md:w-8 md:h-8 fill-current" />
-          ) : (
-            <Mic className="w-6 h-6 md:w-8 md:h-8" />
-          )}
+        <motion.button whileTap={{ scale: 0.9 }} onClick={isRecording ? stopRecording : startRecording} disabled={isAnalyzing} className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-lg transition-colors ${isRecording ? 'bg-rose-500 text-white animate-pulse shadow-rose-200' : 'bg-emerald-500 text-white shadow-emerald-200 hover:bg-emerald-600'} ${isAnalyzing ? 'bg-slate-400 cursor-not-allowed' : ''}`}>
+          {isAnalyzing ? <Loader2 className="w-6 h-6 md:w-8 md:h-8 animate-spin" /> : isRecording ? <Square className="w-6 h-6 md:w-8 md:h-8 fill-current" /> : <Mic className="w-6 h-6 md:w-8 md:h-8" />}
         </motion.button>
-
-        <p className="text-slate-500 text-xs md:text-sm mt-3 md:mt-4 font-medium text-center">
-          {isAnalyzing ? "Analyzing pronunciation..." : isRecording ? "Tap to stop recording" : "Tap to record (Optional)"}
-        </p>
+        <p className="text-slate-500 text-xs md:text-sm mt-3 md:mt-4 font-medium text-center">{isAnalyzing ? "Analyzing pronunciation..." : isRecording ? "Tap to stop recording" : "Tap to record (Optional)"}</p>
+        
+        {micError && <p className="text-red-500 text-xs mt-2 font-bold text-center">{micError}</p>}
 
         <AnimatePresence>
           {score !== null && (
-            <motion.div 
-              initial={{ scale: 0.8, opacity: 0, height: 0 }} 
-              animate={{ scale: 1, opacity: 1, height: 'auto' }}
-              className="mt-4 md:mt-6 text-center w-full border-t border-slate-200 pt-4"
-            >
-              <div className={`text-4xl md:text-5xl font-black ${score >= 80 ? 'text-emerald-500' : score > 50 ? 'text-orange-500' : 'text-rose-500'}`}>
-                {score}%
-              </div>
+            <motion.div initial={{ scale: 0.8, opacity: 0, height: 0 }} animate={{ scale: 1, opacity: 1, height: 'auto' }} className="mt-4 md:mt-6 text-center w-full border-t border-slate-200 pt-4">
+              <div className={`text-4xl md:text-5xl font-black ${score >= 80 ? 'text-emerald-500' : score > 50 ? 'text-orange-500' : 'text-rose-500'}`}>{score}%</div>
               <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] md:text-xs mt-1">Accuracy</p>
             </motion.div>
           )}
@@ -200,81 +187,63 @@ const RecitationTester = ({ correctAyah, onScore }: { correctAyah: string, onSco
   );
 };
 
-// 2. LEARNING VIEW (SPLIT SCREEN)
+// 2. LEARNING VIEW
 const LearningView = ({ level, onReady, currentIndex, totalLevels }: { level: Level, onReady: () => void, currentIndex: number, totalLevels: number }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [bestScore, setBestScore] = useState<number | null>(null); 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // --- FIXED: Memory Leaks & Audio Overlap ---
   useEffect(() => {
     setBestScore(null);
-    playAudio();
-    return () => stopAudio();
-  }, [level]);
+    setIsPlaying(false);
+    
+    // Initialize audio object once per level
+    audioRef.current = new Audio(level.audio);
+    audioRef.current.onended = () => setIsPlaying(false);
+    
+    // Attempt auto-play
+    audioRef.current.play().then(() => setIsPlaying(true)).catch(e => console.log("Auto-play blocked by browser", e));
+
+    // Cleanup on unmount or level change
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = ''; 
+        audioRef.current = null;
+      }
+    };
+  }, [level.audio]);
 
   const playAudio = () => {
-    if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; }
-    const audio = new Audio(level.audio);
-    audioRef.current = audio;
-    audio.play().catch(e => console.log("Audio play failed", e));
-    setIsPlaying(true);
-    audio.onended = () => setIsPlaying(false);
+    if (audioRef.current) { 
+      audioRef.current.currentTime = 0; 
+      audioRef.current.play();
+      setIsPlaying(true);
+    }
   };
 
   const stopAudio = () => {
-    if (audioRef.current) { audioRef.current.pause(); setIsPlaying(false); }
-  };
-
-  const handleScoreUpdate = (score: number) => {
-    setBestScore(prev => (prev === null ? score : Math.max(prev, score)));
+    if (audioRef.current) { 
+      audioRef.current.pause(); 
+      setIsPlaying(false); 
+    }
   };
 
   return (
     <div className="flex flex-col lg:flex-row h-full w-full overflow-y-auto lg:overflow-hidden relative">
-      
-      {/* LEFT COLUMN: THE VERSE */}
       <div className="w-full lg:w-1/2 bg-slate-50 flex flex-col items-center justify-center p-6 py-10 lg:p-12 border-b lg:border-b-0 lg:border-r border-slate-200 shrink-0 lg:h-full lg:overflow-y-auto">
          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none"></div>
-         
          <div className="text-center w-full max-w-lg z-10 flex flex-col items-center">
-            <span className="inline-block bg-white border border-slate-200 text-emerald-700 px-4 py-1.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider mb-6 md:mb-8 shadow-sm">
-                Memorize
-            </span>
-
-            <motion.button 
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={isPlaying ? stopAudio : playAudio}
-                className={`mx-auto w-16 h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center mb-6 md:mb-8 transition-all duration-300 ${isPlaying ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-200 ring-4 ring-emerald-100' : 'bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-500 shadow-sm border border-slate-200'}`}
-            >
+            <span className="inline-block bg-white border border-slate-200 text-emerald-700 px-4 py-1.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider mb-6 md:mb-8 shadow-sm">Memorize</span>
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={isPlaying ? stopAudio : playAudio} className={`mx-auto w-16 h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center mb-6 md:mb-8 transition-all duration-300 ${isPlaying ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-200 ring-4 ring-emerald-100' : 'bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-500 shadow-sm border border-slate-200'}`}>
                 {isPlaying ? <PauseCircle className="w-8 h-8 md:w-12 md:h-12" /> : <Volume2 className="w-8 h-8 md:w-12 md:h-12" />}
             </motion.button>
-
-            <motion.h2 
-                key={level.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-800 font-serif mb-6 md:mb-8 leading-relaxed dir-rtl text-center px-4" 
-                style={{ fontFamily: "'Traditional Arabic', serif", lineHeight: 1.6 }}
-                dir="rtl"
-            >
-                {level.arabicFull}
-            </motion.h2>
-            
-            <motion.p 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                className="text-lg md:text-xl lg:text-2xl text-slate-500 font-medium leading-relaxed mb-4 md:mb-6 px-4"
-            >
-                {level.translation}
-            </motion.p>
-
-            <RecitationTester correctAyah={level.arabicFull} onScore={handleScoreUpdate} />
+            <motion.h2 key={level.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-800 font-serif mb-6 md:mb-8 leading-relaxed dir-rtl text-center px-4" style={{ fontFamily: "'Traditional Arabic', serif", lineHeight: 1.6 }} dir="rtl">{level.arabicFull}</motion.h2>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="text-lg md:text-xl lg:text-2xl text-slate-500 font-medium leading-relaxed mb-4 md:mb-6 px-4">{level.translation}</motion.p>
+            <RecitationTester correctAyah={level.arabicFull} onScore={(s) => setBestScore(prev => Math.max(prev || 0, s))} />
          </div>
       </div>
-
-      {/* RIGHT COLUMN: WORD ANALYSIS */}
       <div className="w-full lg:w-1/2 bg-white flex flex-col relative lg:h-full">
          <div className="flex-1 lg:overflow-y-auto p-4 md:p-6 lg:p-12 pb-32 lg:pb-48 flex flex-col">
             <div className="max-w-xl mx-auto space-y-3 md:space-y-4 w-full">
@@ -282,59 +251,35 @@ const LearningView = ({ level, onReady, currentIndex, totalLevels }: { level: Le
                     <h3 className="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wider">Word Analysis</h3>
                     <div className="h-px bg-slate-100 flex-1 ml-4"></div>
                 </div>
-
                 {level.words.map((word, idx) => {
                     const colors = getColor(idx);
                     return (
-                    <motion.div 
-                        key={idx} 
-                        initial={{ x: 20, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: idx * 0.1 }}
-                        whileHover={{ scale: 1.02, x: -5 }}
-                        className={`flex items-center p-4 md:p-5 rounded-[1.5rem] md:rounded-3xl border-2 ${colors.bg} ${colors.border} transition-colors cursor-default group`}
-                    >
-                        <div className={`w-10 h-10 md:w-12 h-12 shrink-0 rounded-xl md:rounded-2xl flex items-center justify-center font-bold text-xs md:text-sm mr-4 md:mr-6 shadow-sm ${colors.badge}`}>
-                            {idx + 1}
-                        </div>
-                        
+                    <motion.div key={idx} initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: idx * 0.1 }} whileHover={{ scale: 1.02, x: -5 }} className={`flex items-center p-4 md:p-5 rounded-[1.5rem] md:rounded-3xl border-2 ${colors.bg} ${colors.border} transition-colors cursor-default group`}>
+                        <div className={`w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl md:rounded-2xl flex items-center justify-center font-bold text-xs md:text-sm mr-4 md:mr-6 shadow-sm ${colors.badge}`}>{idx + 1}</div>
                         <div className={`flex-1 text-right border-r pr-4 md:pr-6 ${colors.border}`}>
                             <p className={`font-bold text-2xl md:text-3xl font-serif mb-1 ${colors.text}`}>{word.arabic}</p>
                             <p className="text-[10px] md:text-xs text-slate-500 font-bold uppercase tracking-wider opacity-70 group-hover:opacity-100 transition-opacity">{word.transliteration}</p>
                         </div>
-                        
-                        <div className="flex-1 pl-4 md:pl-6 text-left">
-                            <p className="font-bold text-slate-700 text-sm md:text-xl leading-tight">{word.meaning}</p>
-                        </div>
+                        <div className="flex-1 pl-4 md:pl-6 text-left"><p className="font-bold text-slate-700 text-sm md:text-xl leading-tight">{word.meaning}</p></div>
                     </motion.div>
                     );
                 })}
             </div>
          </div>
-
-         {/* Sticky Footer */}
          <div className="sticky bottom-0 lg:absolute left-0 right-0 p-4 md:p-6 lg:p-8 bg-white/95 backdrop-blur border-t border-slate-100 z-20 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] lg:shadow-none mt-auto">
             <div className="w-full max-w-md mx-auto flex flex-col items-center">
-                <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 md:mb-3">
-                    Ayah {currentIndex + 1} of {totalLevels}
-                </p>
-                <motion.button 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => { stopAudio(); onReady(); }}
-                    className="w-full py-3 md:py-4 rounded-xl md:rounded-2xl font-bold text-base md:text-xl transition-all flex items-center justify-center gap-2 md:gap-3 uppercase tracking-wide bg-emerald-600 text-white shadow-lg shadow-emerald-200 hover:shadow-emerald-300"
-                >
+                <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 md:mb-3">Ayah {currentIndex + 1} of {totalLevels}</p>
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => { stopAudio(); onReady(); }} className="w-full py-3 md:py-4 rounded-xl md:rounded-2xl font-bold text-base md:text-xl transition-all flex items-center justify-center gap-2 md:gap-3 uppercase tracking-wide bg-emerald-600 text-white shadow-lg shadow-emerald-200 hover:shadow-emerald-300">
                     <span>Start Quiz</span> <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />
                 </motion.button>
             </div>
          </div>
       </div>
-
     </div>
   );
 };
 
-// 3. QUIZ VIEW (Centered)
+// 3. QUIZ VIEW
 const QuizView = ({ level, onNext, onMistake, currentIndex, totalLevels }: { level: Level, onNext: () => void, onMistake: () => void, currentIndex: number, totalLevels: number }) => {
     type QuizWord = Word & { uniqueId: number; used: boolean; colorIdx: number };
 
@@ -343,15 +288,12 @@ const QuizView = ({ level, onNext, onMistake, currentIndex, totalLevels }: { lev
     const [status, setStatus] = useState<'playing' | 'success' | 'error'>('playing'); 
     const audioRef = useRef<HTMLAudioElement | null>(null);
   
+    // --- FIXED: Audio Object Memory Leak ---
     useEffect(() => {
-      const correctWordsWithColors = level.words.map((w, idx) => ({ 
-          ...w, type: 'correct', colorIdx: idx 
-      }));
-
-      const distractorsWithColors = (level.distractors || []).map((w, idx) => ({ 
-          ...w, meaning: '', type: 'distractor', colorIdx: (level.words.length + idx) 
-      }));
-
+      audioRef.current = new Audio(level.audio);
+      
+      const correctWordsWithColors = level.words.map((w, idx) => ({ ...w, type: 'correct', colorIdx: idx }));
+      const distractorsWithColors = (level.distractors || []).map((w, idx) => ({ ...w, meaning: '', type: 'distractor', colorIdx: (level.words.length + idx) }));
       const allWords = [...correctWordsWithColors, ...distractorsWithColors];
       
       for (let i = allWords.length - 1; i > 0; i--) {
@@ -362,23 +304,33 @@ const QuizView = ({ level, onNext, onMistake, currentIndex, totalLevels }: { lev
       setAvailableWords(allWords.map((w, i) => ({ ...w, uniqueId: i, used: false })));
       setSelectedWords([]);
       setStatus('playing');
+
+      return () => {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.src = '';
+          audioRef.current = null;
+        }
+      }
     }, [level]);
 
     const playHintAudio = () => {
-        if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; }
-        const audio = new Audio(level.audio);
-        audioRef.current = audio;
-        audio.play();
+        if (audioRef.current) { 
+          audioRef.current.currentTime = 0; 
+          audioRef.current.play(); 
+        }
     };
   
     const handleWordClick = (word: QuizWord) => {
       if (status !== 'playing') return;
+      if (typeof window !== 'undefined' && navigator.vibrate) navigator.vibrate(15); 
       setSelectedWords([...selectedWords, word]);
       setAvailableWords(prev => prev.map(w => w.uniqueId === word.uniqueId ? { ...w, used: true } : w));
     };
   
     const handleRemoveWord = (word: QuizWord) => {
       if (status !== 'playing') return;
+      if (typeof window !== 'undefined' && navigator.vibrate) navigator.vibrate(10); 
       setSelectedWords(prev => prev.filter(w => w.uniqueId !== word.uniqueId));
       setAvailableWords(prev => prev.map(w => w.uniqueId === word.uniqueId ? { ...w, used: false } : w));
     };
@@ -389,9 +341,14 @@ const QuizView = ({ level, onNext, onMistake, currentIndex, totalLevels }: { lev
   
       if (currentCorrect === userAttempt) {
         setStatus('success');
-        // Removed playHintAudio() here so it doesn't play automatically
+        if (typeof window !== 'undefined' && navigator.vibrate) {
+          navigator.vibrate([100, 50, 100, 50, 200]); 
+        }
       } else {
         setStatus('error');
+        if (typeof window !== 'undefined' && navigator.vibrate) {
+          navigator.vibrate([50, 50, 50]); 
+        }
         onMistake();
       }
     };
@@ -405,26 +362,15 @@ const QuizView = ({ level, onNext, onMistake, currentIndex, totalLevels }: { lev
                     <h2 className="text-xl md:text-3xl font-bold text-slate-800">Construct the Ayah</h2>
                     <p className="text-slate-400 text-xs md:text-sm font-medium mt-1">Tap words in correct order</p>
                 </div>
-                <motion.button 
-                  whileTap={{ scale: 0.9 }}
-                  onClick={playHintAudio} 
-                  className="w-10 h-10 md:w-14 md:h-14 bg-white border border-slate-200 rounded-full flex items-center justify-center text-emerald-600 shadow-sm hover:shadow-md transition-all shrink-0 ml-4"
-                >
+                <motion.button whileTap={{ scale: 0.9 }} onClick={playHintAudio} className="w-10 h-10 md:w-14 md:h-14 bg-white border border-slate-200 rounded-full flex items-center justify-center text-emerald-600 shadow-sm hover:shadow-md transition-all shrink-0 ml-4">
                   <Volume2 className="w-5 h-5 md:w-6 md:h-6" />
                 </motion.button>
             </div>
             
-            <div 
-              dir="rtl" 
-              className={`min-h-[140px] md:min-h-[180px] border-2 md:border-4 border-dashed rounded-2xl md:rounded-[2.5rem] p-4 md:p-8 mb-6 md:mb-10 flex flex-wrap gap-2 md:gap-4 items-center justify-center transition-colors duration-300 ${status === 'error' ? 'bg-red-50 border-red-200' : 'bg-white border-slate-200'}`}
-            >
+            <div dir="rtl" className={`min-h-[140px] md:min-h-[180px] border-2 md:border-4 border-dashed rounded-2xl md:rounded-[2.5rem] p-4 md:p-8 mb-6 md:mb-10 flex flex-wrap gap-2 md:gap-4 items-center justify-center transition-colors duration-300 ${status === 'error' ? 'bg-red-50 border-red-200' : 'bg-white border-slate-200'}`}>
                 <AnimatePresence>
                     {selectedWords.length === 0 && (
-                    <motion.span 
-                        dir="ltr"
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="text-slate-400 font-medium flex items-center gap-2 text-sm md:text-lg text-center"
-                    >
+                    <motion.span dir="ltr" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-slate-400 font-medium flex items-center gap-2 text-sm md:text-lg text-center">
                         <Target className="w-5 h-5 md:w-6 md:h-6 shrink-0" /> Tap words below to build
                     </motion.span>
                     )}
@@ -432,11 +378,7 @@ const QuizView = ({ level, onNext, onMistake, currentIndex, totalLevels }: { lev
                         const colors = getColor(word.colorIdx || 0);
                         return (
                             <motion.button
-                                layoutId={`word-${word.uniqueId}`}
-                                key={word.uniqueId}
-                                initial={{ scale: 0.8, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                exit={{ scale: 0.8, opacity: 0 }}
+                                layoutId={`word-${word.uniqueId}`} key={word.uniqueId} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}
                                 onClick={() => handleRemoveWord(word)}
                                 className={`px-4 py-3 md:px-6 md:py-4 rounded-xl md:rounded-2xl shadow-sm border-b-[3px] md:border-b-4 transition-all flex items-center gap-2 ${colors.bg} ${colors.border} ${colors.text}`}
                             >
@@ -447,7 +389,6 @@ const QuizView = ({ level, onNext, onMistake, currentIndex, totalLevels }: { lev
                 </AnimatePresence>
             </div>
             
-            {/* Word Bank */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                 {availableWords.map((word) => {
                 const colors = getColor(word.colorIdx);
@@ -456,12 +397,8 @@ const QuizView = ({ level, onNext, onMistake, currentIndex, totalLevels }: { lev
                         <AnimatePresence>
                             {!word.used && (
                                 <motion.button
-                                    layoutId={`word-${word.uniqueId}`}
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.5 }}
-                                    onClick={() => handleWordClick(word)}
-                                    whileTap={{ scale: 0.95 }}
+                                    layoutId={`word-${word.uniqueId}`} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }}
+                                    onClick={() => handleWordClick(word)} whileTap={{ scale: 0.95 }}
                                     className={`absolute inset-0 w-full h-full border-2 border-b-[3px] md:border-b-4 rounded-xl md:rounded-3xl shadow-sm flex flex-col items-center justify-center ${colors.bg} ${colors.border} ${colors.text} p-2`}
                                 >
                                 <span className="font-serif text-2xl md:text-4xl font-bold mb-1 md:mb-2 text-center">{word.arabic}</span>
@@ -476,16 +413,7 @@ const QuizView = ({ level, onNext, onMistake, currentIndex, totalLevels }: { lev
           </div>
         </div>
         
-        {/* Fixed Footer for Quiz */}
-        <motion.div 
-            initial={{ y: 100 }}
-            animate={{ y: 0 }}
-            className={clsx(
-            "absolute bottom-0 left-0 right-0 p-4 md:p-6 border-t-2 z-20 transition-colors duration-300",
-            status === 'success' ? 'bg-emerald-100 border-emerald-200' : 
-            status === 'error' ? 'bg-red-100 border-red-200' : 'bg-white border-slate-200'
-            )}
-        >
+        <motion.div initial={{ y: 100 }} animate={{ y: 0 }} className={clsx("absolute bottom-0 left-0 right-0 p-4 md:p-6 border-t-2 z-20 transition-colors duration-300", status === 'success' ? 'bg-emerald-100 border-emerald-200' : status === 'error' ? 'bg-red-100 border-red-200' : 'bg-white border-slate-200')}>
           <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="w-full sm:flex-1 flex justify-center sm:justify-start">
                <AnimatePresence mode='wait'>
@@ -520,30 +448,11 @@ const QuizView = ({ level, onNext, onMistake, currentIndex, totalLevels }: { lev
             </div>
             <div className="w-full sm:w-40 shrink-0">
                {status === 'playing' ? (
-                  <motion.button 
-                    whileTap={{ scale: 0.95 }}
-                    onClick={checkAnswer}
-                    disabled={selectedWords.length === 0}
-                    className="w-full py-3 md:py-4 bg-slate-800 disabled:bg-slate-300 text-white rounded-xl md:rounded-2xl font-bold shadow-lg active:translate-y-1 transition-all uppercase tracking-wider text-sm md:text-lg"
-                  >
-                    Check
-                  </motion.button>
+                  <motion.button whileTap={{ scale: 0.95 }} onClick={checkAnswer} disabled={selectedWords.length === 0} className="w-full py-3 md:py-4 bg-slate-800 disabled:bg-slate-300 text-white rounded-xl md:rounded-2xl font-bold shadow-lg active:translate-y-1 transition-all uppercase tracking-wider text-sm md:text-lg">Check</motion.button>
                ) : status === 'success' ? (
-                  <motion.button 
-                    whileTap={{ scale: 0.95 }}
-                    onClick={onNext}
-                    className="w-full py-3 md:py-4 bg-emerald-600 text-white rounded-xl md:rounded-2xl font-bold shadow-lg active:translate-y-1 transition-all uppercase tracking-wider text-sm md:text-lg"
-                  >
-                    Continue
-                  </motion.button>
+                  <motion.button whileTap={{ scale: 0.95 }} onClick={onNext} className="w-full py-3 md:py-4 bg-emerald-600 text-white rounded-xl md:rounded-2xl font-bold shadow-lg active:translate-y-1 transition-all uppercase tracking-wider text-sm md:text-lg">Continue</motion.button>
                ) : (
-                  <motion.button 
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => { setStatus('playing'); setSelectedWords([]); setAvailableWords(prev => prev.map(w => ({ ...w, used: false }))); }}
-                    className="w-full py-3 md:py-4 bg-red-500 text-white rounded-xl md:rounded-2xl font-bold shadow-lg active:translate-y-1 transition-all uppercase tracking-wider text-sm md:text-lg"
-                  >
-                    Retry
-                  </motion.button>
+                  <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setStatus('playing'); setSelectedWords([]); setAvailableWords(prev => prev.map(w => ({ ...w, used: false }))); }} className="w-full py-3 md:py-4 bg-red-500 text-white rounded-xl md:rounded-2xl font-bold shadow-lg active:translate-y-1 transition-all uppercase tracking-wider text-sm md:text-lg">Retry</motion.button>
                )}
             </div>
           </div>
@@ -557,18 +466,42 @@ const QuizView = ({ level, onNext, onMistake, currentIndex, totalLevels }: { lev
 export default function LearnPage() {
   const params = useParams();
   const router = useRouter();
-  const { user, completeSurah, loseHeart } = useUser();
+  
+  const { user, completeSurah, loseHeart, updateSurahProgress } = useUser();
   
   const surahId = params.id as string;
   const surah = SURAHS.find(s => s.id === surahId);
 
   const [hasStarted, setHasStarted] = useState(false);
-  const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
   const [mode, setMode] = useState<'learn' | 'quiz'>('learn');
   const [isCompleted, setIsCompleted] = useState(false);
+  const [randomQuote, setRandomQuote] = useState("");
 
+  const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
+
+  // --- FIXED: Render-Phase Redirect ---
+  useEffect(() => {
+    if (!surah) {
+       router.replace('/dashboard');
+    }
+  }, [surah, router]);
+
+  useEffect(() => {
+    if (surah && user.surahProgress) {
+       const savedIndex = user.surahProgress[surah.id] || 0;
+       setCurrentLevelIndex(Math.min(savedIndex, surah.levels.length - 1));
+    }
+  }, [surah, user.surahProgress]);
+
+  // Set random quote when completed
+  useEffect(() => {
+    if (isCompleted) {
+      setRandomQuote(MOTIVATION_QUOTES[Math.floor(Math.random() * MOTIVATION_QUOTES.length)]);
+    }
+  }, [isCompleted]);
+
+  // Return null while effect runs if surah is undefined
   if (!surah) {
-     if(typeof window !== 'undefined') router.push('/dashboard');
      return null;
   }
 
@@ -576,13 +509,23 @@ export default function LearnPage() {
   const progress = ((currentLevelIndex) / surah.levels.length) * 100;
 
   const handleNext = () => {
-    if (currentLevelIndex < surah.levels.length - 1) {
-      setCurrentLevelIndex(prev => prev + 1);
+    const nextIndex = currentLevelIndex + 1;
+    if (nextIndex < surah.levels.length) {
+      setCurrentLevelIndex(nextIndex);
       setMode('learn');
+      updateSurahProgress(surah.id, nextIndex); 
     } else {
       completeSurah(surah.id);
       setIsCompleted(true);
-      setTimeout(() => router.push('/dashboard'), 3000);
+      // Give time to enjoy XP bar and Confetti
+      setTimeout(() => router.push('/dashboard'), 4500);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentLevelIndex > 0) {
+      setCurrentLevelIndex(prev => prev - 1);
+      setMode('learn');
     }
   };
 
@@ -624,21 +567,51 @@ export default function LearnPage() {
     );
   }
 
+  // --- NEW: Enhanced Completion Screen with XP Bar & Quote ---
   if (isCompleted) {
       return (
-        <div className="fixed inset-0 z-[60] bg-emerald-500 flex flex-col items-center justify-center text-white p-6 text-center animate-in zoom-in duration-500">
+        <div className="fixed inset-0 z-[60] bg-emerald-500 flex flex-col items-center justify-center text-white p-6 text-center animate-in zoom-in duration-500 overflow-hidden">
+           <Confetti />
            <motion.div 
              animate={{ y: [0, -20, 0] }} transition={{ repeat: Infinity, duration: 2 }}
-             className="w-32 h-32 md:w-40 md:h-40 bg-white rounded-full flex items-center justify-center mb-6 md:mb-8 shadow-2xl"
+             className="w-32 h-32 md:w-40 md:h-40 bg-white rounded-full flex items-center justify-center mb-6 md:mb-8 shadow-2xl relative z-10"
            >
               <Award className="w-16 h-16 md:w-20 md:h-20 text-emerald-600" />
            </motion.div>
-           <h2 className="text-4xl md:text-5xl font-bold mb-3 md:mb-4">MashaAllah!</h2>
-           <p className="text-emerald-100 text-lg md:text-2xl mb-6 md:mb-8">Surah {surah.title} Completed.</p>
-           <div className="flex items-center gap-2 md:gap-3 bg-emerald-600 px-6 py-3 md:px-8 md:py-4 rounded-full shadow-lg border border-emerald-400/30">
-              <Zap className="w-6 h-6 md:w-8 md:h-8 text-yellow-300 fill-current" />
-              <span className="font-bold text-xl md:text-2xl">+100 XP</span>
+           <h2 className="text-4xl md:text-5xl font-bold mb-3 md:mb-4 relative z-10">MashaAllah!</h2>
+           <p className="text-emerald-100 text-lg md:text-2xl mb-8 md:mb-10 relative z-10">Surah {surah.title} Completed.</p>
+           
+           {/* Animated XP Bar */}
+           <div className="w-full max-w-xs relative z-10 mb-8">
+             <div className="flex justify-between text-sm font-bold mb-2">
+               <span className="text-emerald-100 uppercase tracking-wider text-xs">Total XP</span>
+               <span className="text-yellow-300 animate-pulse">+100 Gained!</span>
+             </div>
+             <div className="h-4 bg-emerald-700 rounded-full overflow-hidden border border-emerald-400/30 p-0.5">
+               <motion.div 
+                 initial={{ width: 0 }}
+                 animate={{ width: "100%" }}
+                 transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+                 className="h-full bg-yellow-400 rounded-full relative"
+               >
+                 <div className="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite]"></div>
+               </motion.div>
+             </div>
+             <div className="mt-3 text-white text-lg font-bold flex items-center justify-center gap-1.5 drop-shadow-md">
+               <Zap className="w-5 h-5 text-yellow-300 fill-current" />
+               {user.xp} XP
+             </div>
            </div>
+
+           {/* Random Motivation Quote */}
+           <motion.p 
+             initial={{ opacity: 0, y: 10 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ delay: 1.5, duration: 0.5 }}
+             className="text-emerald-50 text-base md:text-lg italic max-w-sm relative z-10 leading-relaxed px-4"
+           >
+             "{randomQuote}"
+           </motion.p>
         </div>
       );
   }
@@ -653,9 +626,27 @@ export default function LearnPage() {
          
          {/* Top Navbar */}
          <div className="w-full px-4 py-3 md:px-6 md:py-4 flex items-center justify-between border-b border-slate-100 bg-white z-30 shadow-sm shrink-0">
-            <button onClick={() => router.push('/dashboard')} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-               <X className="w-5 h-5 md:w-6 md:h-6 text-slate-400" />
-            </button>
+            
+            <div className="flex items-center gap-1 md:gap-2 shrink-0">
+                <button 
+                   onClick={() => router.push('/dashboard')} 
+                   className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                   aria-label="Close lesson"
+                >
+                   <X className="w-5 h-5 md:w-6 md:h-6 text-slate-400" />
+                </button>
+                <button 
+                   onClick={handleBack}
+                   disabled={currentLevelIndex === 0}
+                   className={clsx(
+                     "p-2 rounded-full transition-colors",
+                     currentLevelIndex === 0 ? "text-slate-200 cursor-not-allowed" : "text-slate-400 hover:bg-slate-100"
+                   )}
+                   aria-label="Previous Ayah"
+                >
+                   <ArrowLeft className="w-5 h-5 md:w-6 md:h-6" />
+                </button>
+            </div>
             
             <div className="flex-1 max-w-md mx-4 md:mx-6 flex flex-col">
                <div className="flex justify-between items-end mb-1.5 px-1">

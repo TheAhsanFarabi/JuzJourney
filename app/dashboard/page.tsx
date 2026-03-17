@@ -249,7 +249,7 @@ export default function Dashboard() {
 
             {/* THE INTERACTIVE MAP */}
             <div 
-               className="relative w-full" 
+               className="relative w-full my-8" 
                style={{ height: `${Math.max(800, totalCount * 130)}px` }}
             >
                
@@ -265,7 +265,7 @@ export default function Dashboard() {
                    d={pathData}
                    fill="none" 
                    stroke="url(#pathGradient)" 
-                   strokeWidth="0.8" /* CHANGED: Thinner line */
+                   strokeWidth="0.8" 
                    strokeDasharray="4"
                    strokeLinecap="round"
                    className="opacity-40"
@@ -276,7 +276,17 @@ export default function Dashboard() {
                {SURAHS.map((surah, index) => {
                  const completed = isCompleted(surah.id);
                  const pos = positions[index];
-                 const Icon = IconMap[surah.iconName] || Star; // Fallback to Star if icon missing
+                 const Icon = IconMap[surah.iconName] || Star;
+
+                 // Calculate Progress
+                 const savedProgress = user.surahProgress?.[surah.id] || 0;
+                 const progressPercentage = completed ? 100 : (savedProgress / surah.totalVerses) * 100;
+
+                 // SVG Circle Math for the border
+                 const radius = 46; 
+                 const strokeWidth = 8;
+                 const circumference = 2 * Math.PI * radius;
+                 const strokeDashoffset = circumference - (progressPercentage / 100) * circumference;
 
                  return (
                    <div 
@@ -284,22 +294,56 @@ export default function Dashboard() {
                      className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500 group" 
                      style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
                    >
-                     <div className="flex flex-col items-center">
+                     <div className="flex flex-col items-center relative">
+
                        <button
                          onClick={() => router.push(`/learn/${surah.id}`)}
                          className={clsx(
-                           "w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center border-[6px] shadow-[0_8px_0_rgba(0,0,0,0.1)] active:translate-y-2 active:shadow-none transition-all relative z-10 hover:scale-110 cursor-pointer",
+                           "relative w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95 shadow-[0_6px_0_rgba(203,213,225,0.5)] active:translate-y-1 active:shadow-none focus:outline-none",
                            completed 
-                             ? `bg-gradient-to-br ${surah.themeGradient} border-white` 
-                             : 'bg-slate-200 border-slate-300'
+                             ? `bg-gradient-to-br ${surah.themeGradient}` 
+                             : progressPercentage > 0 
+                               ? 'bg-white' 
+                               : 'bg-slate-50'
                          )}
                        >
-                         {/* Show the specific icon. White if completed, gray if not. */}
-                         <Icon className={clsx("w-8 h-8 md:w-10 md:h-10", completed ? "text-white" : "text-slate-400")} />
+                         {/* The SVG acting EXACTLY as the border */}
+                         <svg className="absolute inset-0 w-full h-full transform -rotate-90 pointer-events-none rounded-full" viewBox="0 0 100 100">
+                           {/* Background Track (The empty border) */}
+                           <circle 
+                              cx="50" 
+                              cy="50" 
+                              r={radius} 
+                              fill="transparent" 
+                              className={clsx(completed ? "stroke-white/20" : "stroke-slate-200")} 
+                              strokeWidth={strokeWidth} 
+                           />
+                           {/* Active Progress Fill */}
+                           <circle
+                             cx="50"
+                             cy="50"
+                             r={radius}
+                             fill="transparent"
+                             className={clsx(
+                               "transition-all duration-1000 ease-out",
+                               completed ? "stroke-white" : "stroke-emerald-500" 
+                             )}
+                             strokeWidth={strokeWidth}
+                             strokeDasharray={circumference}
+                             strokeDashoffset={strokeDashoffset}
+                             strokeLinecap="round"
+                           />
+                         </svg>
+
+                         {/* Inner Icon */}
+                         <Icon className={clsx(
+                           "relative z-10 w-8 h-8 md:w-10 md:h-10 transition-colors",
+                           completed ? "text-white" : progressPercentage > 0 ? "text-emerald-500" : "text-slate-400"
+                         )} />
                          
-                         {/* Stars for completion */}
+                         {/* Completion Star Badge */}
                          {completed && ( 
-                            <div className="absolute -top-2 -right-2 animate-bounce">
+                            <div className="absolute -top-2 -right-2 animate-bounce z-20">
                                 <div className="bg-yellow-400 rounded-full p-1.5 border-4 border-white shadow-sm">
                                     <Star className="w-4 h-4 text-yellow-900 fill-current" />
                                 </div>
@@ -308,8 +352,8 @@ export default function Dashboard() {
                        </button>
                        
                        {/* Label */}
-                       <div className="mt-4 bg-white px-4 py-2 rounded-xl border-2 shadow-sm text-center transform transition-all whitespace-nowrap z-20 border-slate-100 group-hover:scale-105">
-                         <h3 className={clsx("text-sm font-bold", completed ? 'text-slate-800' : 'text-slate-500')}>
+                       <div className="mt-4 bg-white px-4 py-2 rounded-xl border-2 shadow-sm text-center transform transition-all whitespace-nowrap z-20 border-slate-100 group-hover:scale-105 group-hover:border-emerald-200">
+                         <h3 className={clsx("text-sm font-bold transition-colors", completed ? 'text-slate-800' : 'text-slate-500', "group-hover:text-emerald-700")}>
                             {surah.title}
                          </h3>
                        </div>

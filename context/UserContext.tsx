@@ -6,9 +6,11 @@ type UserState = {
   name: string;
   xp: number;
   streak: number;
-  hearts: number; // This was missing in your old local storage data
+  hearts: number;
   completedSurahs: string[];
   hasOnboarded: boolean;
+  // NEW: Track the highest ayah index reached per surah
+  surahProgress: { [surahId: string]: number }; 
 };
 
 type UserContextType = {
@@ -19,6 +21,7 @@ type UserContextType = {
   loseHeart: () => void;
   refillHearts: () => void;
   resetProgress: () => void;
+  updateSurahProgress: (surahId: string, ayahIndex: number) => void; // NEW
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -27,25 +30,29 @@ const INITIAL_STATE: UserState = {
   name: '',
   xp: 0,
   streak: 1,
-  hearts: 5, // Default value
+  hearts: 5,
   completedSurahs: [],
   hasOnboarded: false,
+  surahProgress: {}, // Default empty object
 };
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserState>(INITIAL_STATE);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // 1. Load from LocalStorage (FIXED)
+  // 1. Load from LocalStorage
   useEffect(() => {
     const saved = localStorage.getItem('juz-journey-data');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // SAFETY MERGE:
-        // This ensures that if 'hearts' is missing in 'parsed', 
-        // it grabs the default '5' from INITIAL_STATE.
-        setUser({ ...INITIAL_STATE, ...parsed }); 
+        // SAFETY MERGE: Ensure old saves don't break the app if they lack 'hearts' or 'surahProgress'
+        setUser({
+          ...INITIAL_STATE,
+          ...parsed,
+          hearts: parsed.hearts ?? INITIAL_STATE.hearts,
+          surahProgress: parsed.surahProgress ?? INITIAL_STATE.surahProgress,
+        }); 
       } catch (e) {
         console.error("Failed to parse user data", e);
       }
@@ -74,6 +81,24 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // NEW: Function to update how many ayahs the user has completed in a specific surah
+  const updateSurahProgress = (surahId: string, ayahIndex: number) => {
+    setUser((prev) => {
+      const currentProgress = prev.surahProgress?.[surahId] || 0;
+      // Only update if they reached a new high score for this surah
+      if (ayahIndex > currentProgress) {
+        return {
+          ...prev,
+          surahProgress: {
+            ...prev.surahProgress,
+            [surahId]: ayahIndex,
+          },
+        };
+      }
+      return prev;
+    });
+  };
+
   const addXp = (amount: number) => {
     setUser(prev => ({ ...prev, xp: prev.xp + amount }));
   };
@@ -81,7 +106,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const loseHeart = () => {
     setUser(prev => ({ 
       ...prev, 
-      // Safety check to ensure hearts is a number before subtracting
       hearts: Math.max(0, (prev.hearts || 5) - 1) 
     }));
   };
@@ -98,7 +122,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   if (!isLoaded) return null; 
 
   return (
-    <UserContext.Provider value={{ user, updateName, completeSurah, addXp, loseHeart, refillHearts, resetProgress }}>
+    <UserContext.Provider 
+      value={{ 
+        user, 
+        updateName, 
+        completeSurah, 
+        addXp, 
+        loseHeart, 
+        refillHearts, 
+        resetProgress, 
+        updateSurahProgress // Provide the new function
+      }}
+    >
       {children}
     </UserContext.Provider>
   );

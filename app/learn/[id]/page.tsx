@@ -19,13 +19,14 @@ const IconMap: Record<string, ElementType> = {
   Moon, Cloud, Book, Feather, Mountain
 };
 
+// Updated Palette to support dark mode variants smoothly
 const WORD_PALETTE = [
-  { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-800', badge: 'bg-emerald-100 text-emerald-700' },
-  { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800', badge: 'bg-blue-100 text-blue-700' },
-  { bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-800', badge: 'bg-violet-100 text-violet-700' },
-  { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-800', badge: 'bg-orange-100 text-orange-700' },
-  { bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-800', badge: 'bg-rose-100 text-rose-700' },
-  { bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-800', badge: 'bg-cyan-100 text-cyan-700' },
+  { bg: 'bg-emerald-50 dark:bg-emerald-900/30', border: 'border-emerald-200 dark:border-emerald-800', text: 'text-emerald-800 dark:text-emerald-300', badge: 'bg-emerald-100 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-200' },
+  { bg: 'bg-blue-50 dark:bg-blue-900/30', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-800 dark:text-blue-300', badge: 'bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200' },
+  { bg: 'bg-violet-50 dark:bg-violet-900/30', border: 'border-violet-200 dark:border-violet-800', text: 'text-violet-800 dark:text-violet-300', badge: 'bg-violet-100 dark:bg-violet-800 text-violet-700 dark:text-violet-200' },
+  { bg: 'bg-orange-50 dark:bg-orange-900/30', border: 'border-orange-200 dark:border-orange-800', text: 'text-orange-800 dark:text-orange-300', badge: 'bg-orange-100 dark:bg-orange-800 text-orange-700 dark:text-orange-200' },
+  { bg: 'bg-rose-50 dark:bg-rose-900/30', border: 'border-rose-200 dark:border-rose-800', text: 'text-rose-800 dark:text-rose-300', badge: 'bg-rose-100 dark:bg-rose-800 text-rose-700 dark:text-rose-200' },
+  { bg: 'bg-cyan-50 dark:bg-cyan-900/30', border: 'border-cyan-200 dark:border-cyan-800', text: 'text-cyan-800 dark:text-cyan-300', badge: 'bg-cyan-100 dark:bg-cyan-800 text-cyan-700 dark:text-cyan-200' },
 ];
 
 const getColor = (index: number) => WORD_PALETTE[index % WORD_PALETTE.length];
@@ -79,9 +80,9 @@ const Confetti = () => {
 const StoryIntro = ({ surah, onStart }: { surah: Surah, onStart: () => void }) => {
   const Icon = IconMap[surah.iconName];
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4 md:p-6">
-      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", duration: 0.5 }} className="bg-white rounded-[2rem] max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col md:flex-row">
-        <div className={`py-12 md:h-auto md:w-1/2 bg-gradient-to-br ${surah.themeGradient} flex flex-col items-center justify-center relative px-6 md:px-10 text-center shrink-0`}>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-50 bg-slate-900/90 dark:bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4 md:p-6 transition-colors">
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", duration: 0.5 }} className="bg-white dark:bg-slate-900 rounded-[2rem] max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col md:flex-row transition-colors">
+        <div className={`py-12 md:h-auto md:w-1/2 bg-gradient-to-br ${surah.themeGradient} dark:opacity-90 flex flex-col items-center justify-center relative px-6 md:px-10 text-center shrink-0`}>
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-30"></div>
           <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="w-24 h-24 md:w-32 md:h-32 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border-4 border-white/30 mb-4 md:mb-6 shadow-lg">
             <Icon className="w-12 h-12 md:w-16 md:h-16 text-white" />
@@ -89,12 +90,12 @@ const StoryIntro = ({ surah, onStart }: { surah: Surah, onStart: () => void }) =
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-2 drop-shadow-md">{surah.title}</h2>
           <p className="text-white/90 font-medium text-base md:text-lg tracking-wide uppercase">{surah.meaning}</p>
         </div>
-        <div className="p-6 md:p-10 md:w-1/2 flex flex-col justify-center bg-slate-50">
+        <div className="p-6 md:p-10 md:w-1/2 flex flex-col justify-center bg-slate-50 dark:bg-slate-900 transition-colors">
           <div className="mb-8">
-            <h3 className="font-bold text-slate-400 uppercase tracking-widest text-xs mb-3 md:mb-4">The Context</h3>
-            <p className="text-slate-700 leading-relaxed text-base md:text-lg font-medium">{surah.story}</p>
+            <h3 className="font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-xs mb-3 md:mb-4">The Context</h3>
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-base md:text-lg font-medium">{surah.story}</p>
           </div>
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onStart} className="w-full py-4 md:py-5 bg-emerald-600 text-white rounded-2xl font-bold text-lg shadow-lg shadow-emerald-200 hover:shadow-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-3">
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onStart} className="w-full py-4 md:py-5 bg-emerald-600 text-white rounded-2xl font-bold text-lg shadow-lg shadow-emerald-200 dark:shadow-none hover:shadow-xl hover:bg-emerald-700 dark:hover:bg-emerald-500 transition-all flex items-center justify-center gap-3">
             Start Lesson <ArrowRight className="w-5 h-5" />
           </motion.button>
         </div>
@@ -165,20 +166,20 @@ const RecitationTester = ({ correctAyah, onScore }: { correctAyah: string, onSco
 
   return (
     <div className="flex flex-col items-center mt-6 md:mt-10 w-full px-4 md:px-0">
-      <div className="flex flex-col items-center p-5 md:p-6 bg-white/60 backdrop-blur rounded-3xl border-2 border-emerald-100 shadow-sm w-full max-w-sm">
-        <h3 className="font-bold text-slate-500 mb-4 text-xs md:text-sm uppercase tracking-widest text-center">Test Your Recitation</h3>
-        <motion.button whileTap={{ scale: 0.9 }} onClick={isRecording ? stopRecording : startRecording} disabled={isAnalyzing} className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-lg transition-colors ${isRecording ? 'bg-rose-500 text-white animate-pulse shadow-rose-200' : 'bg-emerald-500 text-white shadow-emerald-200 hover:bg-emerald-600'} ${isAnalyzing ? 'bg-slate-400 cursor-not-allowed' : ''}`}>
+      <div className="flex flex-col items-center p-5 md:p-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur rounded-3xl border-2 border-emerald-100 dark:border-emerald-900/30 shadow-sm w-full max-w-sm transition-colors">
+        <h3 className="font-bold text-slate-500 dark:text-slate-400 mb-4 text-xs md:text-sm uppercase tracking-widest text-center">Test Your Recitation</h3>
+        <motion.button whileTap={{ scale: 0.9 }} onClick={isRecording ? stopRecording : startRecording} disabled={isAnalyzing} className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-lg transition-colors ${isRecording ? 'bg-rose-500 text-white animate-pulse shadow-rose-200 dark:shadow-rose-900/50' : 'bg-emerald-500 text-white shadow-emerald-200 dark:shadow-emerald-900/50 hover:bg-emerald-600'} ${isAnalyzing ? 'bg-slate-400 dark:bg-slate-600 cursor-not-allowed' : ''}`}>
           {isAnalyzing ? <Loader2 className="w-6 h-6 md:w-8 md:h-8 animate-spin" /> : isRecording ? <Square className="w-6 h-6 md:w-8 md:h-8 fill-current" /> : <Mic className="w-6 h-6 md:w-8 md:h-8" />}
         </motion.button>
-        <p className="text-slate-500 text-xs md:text-sm mt-3 md:mt-4 font-medium text-center">{isAnalyzing ? "Analyzing pronunciation..." : isRecording ? "Tap to stop recording" : "Tap to record (Optional)"}</p>
+        <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm mt-3 md:mt-4 font-medium text-center">{isAnalyzing ? "Analyzing pronunciation..." : isRecording ? "Tap to stop recording" : "Tap to record (Optional)"}</p>
         
-        {micError && <p className="text-red-500 text-xs mt-2 font-bold text-center">{micError}</p>}
+        {micError && <p className="text-red-500 dark:text-red-400 text-xs mt-2 font-bold text-center">{micError}</p>}
 
         <AnimatePresence>
           {score !== null && (
-            <motion.div initial={{ scale: 0.8, opacity: 0, height: 0 }} animate={{ scale: 1, opacity: 1, height: 'auto' }} className="mt-4 md:mt-6 text-center w-full border-t border-slate-200 pt-4">
-              <div className={`text-4xl md:text-5xl font-black ${score >= 80 ? 'text-emerald-500' : score > 50 ? 'text-orange-500' : 'text-rose-500'}`}>{score}%</div>
-              <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] md:text-xs mt-1">Accuracy</p>
+            <motion.div initial={{ scale: 0.8, opacity: 0, height: 0 }} animate={{ scale: 1, opacity: 1, height: 'auto' }} className="mt-4 md:mt-6 text-center w-full border-t border-slate-200 dark:border-slate-700 pt-4">
+              <div className={`text-4xl md:text-5xl font-black ${score >= 80 ? 'text-emerald-500 dark:text-emerald-400' : score > 50 ? 'text-orange-500 dark:text-orange-400' : 'text-rose-500 dark:text-rose-400'}`}>{score}%</div>
+              <p className="text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px] md:text-xs mt-1">Accuracy</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -193,19 +194,15 @@ const LearningView = ({ level, onReady, currentIndex, totalLevels }: { level: Le
   const [bestScore, setBestScore] = useState<number | null>(null); 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // --- FIXED: Memory Leaks & Audio Overlap ---
   useEffect(() => {
     setBestScore(null);
     setIsPlaying(false);
     
-    // Initialize audio object once per level
     audioRef.current = new Audio(level.audio);
     audioRef.current.onended = () => setIsPlaying(false);
     
-    // Attempt auto-play
     audioRef.current.play().then(() => setIsPlaying(true)).catch(e => console.log("Auto-play blocked by browser", e));
 
-    // Cleanup on unmount or level change
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
@@ -231,25 +228,25 @@ const LearningView = ({ level, onReady, currentIndex, totalLevels }: { level: Le
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-full w-full overflow-y-auto lg:overflow-hidden relative">
-      <div className="w-full lg:w-1/2 bg-slate-50 flex flex-col items-center justify-center p-6 py-10 lg:p-12 border-b lg:border-b-0 lg:border-r border-slate-200 shrink-0 lg:h-full lg:overflow-y-auto">
-         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none"></div>
+    <div className="flex flex-col lg:flex-row h-full w-full overflow-y-auto lg:overflow-hidden relative transition-colors">
+      <div className="w-full lg:w-1/2 bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 py-10 lg:p-12 border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-slate-800 shrink-0 lg:h-full lg:overflow-y-auto transition-colors">
+         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 dark:opacity-[0.02] pointer-events-none"></div>
          <div className="text-center w-full max-w-lg z-10 flex flex-col items-center">
-            <span className="inline-block bg-white border border-slate-200 text-emerald-700 px-4 py-1.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider mb-6 md:mb-8 shadow-sm">Memorize</span>
-            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={isPlaying ? stopAudio : playAudio} className={`mx-auto w-16 h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center mb-6 md:mb-8 transition-all duration-300 ${isPlaying ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-200 ring-4 ring-emerald-100' : 'bg-white text-slate-400 hover:bg-emerald-50 hover:text-emerald-500 shadow-sm border border-slate-200'}`}>
+            <span className="inline-block bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-emerald-700 dark:text-emerald-400 px-4 py-1.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider mb-6 md:mb-8 shadow-sm transition-colors">Memorize</span>
+            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={isPlaying ? stopAudio : playAudio} className={`mx-auto w-16 h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center mb-6 md:mb-8 transition-all duration-300 ${isPlaying ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-200 dark:shadow-emerald-900/50 ring-4 ring-emerald-100 dark:ring-emerald-900/30' : 'bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-500 dark:hover:text-emerald-400 shadow-sm border border-slate-200 dark:border-slate-700'}`}>
                 {isPlaying ? <PauseCircle className="w-8 h-8 md:w-12 md:h-12" /> : <Volume2 className="w-8 h-8 md:w-12 md:h-12" />}
             </motion.button>
-            <motion.h2 key={level.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-800 font-serif mb-6 md:mb-8 leading-relaxed dir-rtl text-center px-4" style={{ fontFamily: "'Traditional Arabic', serif", lineHeight: 1.6 }} dir="rtl">{level.arabicFull}</motion.h2>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="text-lg md:text-xl lg:text-2xl text-slate-500 font-medium leading-relaxed mb-4 md:mb-6 px-4">{level.translation}</motion.p>
+            <motion.h2 key={level.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-800 dark:text-slate-100 font-serif mb-6 md:mb-8 leading-relaxed dir-rtl text-center px-4 transition-colors" style={{ fontFamily: "'Traditional Arabic', serif", lineHeight: 1.6 }} dir="rtl">{level.arabicFull}</motion.h2>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="text-lg md:text-xl lg:text-2xl text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-4 md:mb-6 px-4 transition-colors">{level.translation}</motion.p>
             <RecitationTester correctAyah={level.arabicFull} onScore={(s) => setBestScore(prev => Math.max(prev || 0, s))} />
          </div>
       </div>
-      <div className="w-full lg:w-1/2 bg-white flex flex-col relative lg:h-full">
+      <div className="w-full lg:w-1/2 bg-white dark:bg-slate-900 flex flex-col relative lg:h-full transition-colors">
          <div className="flex-1 lg:overflow-y-auto p-4 md:p-6 lg:p-12 pb-32 lg:pb-48 flex flex-col">
             <div className="max-w-xl mx-auto space-y-3 md:space-y-4 w-full">
                 <div className="flex items-center justify-between mb-4 md:mb-6">
-                    <h3 className="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wider">Word Analysis</h3>
-                    <div className="h-px bg-slate-100 flex-1 ml-4"></div>
+                    <h3 className="text-xs md:text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Word Analysis</h3>
+                    <div className="h-px bg-slate-100 dark:bg-slate-800 flex-1 ml-4 transition-colors"></div>
                 </div>
                 {level.words.map((word, idx) => {
                     const colors = getColor(idx);
@@ -258,18 +255,18 @@ const LearningView = ({ level, onReady, currentIndex, totalLevels }: { level: Le
                         <div className={`w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl md:rounded-2xl flex items-center justify-center font-bold text-xs md:text-sm mr-4 md:mr-6 shadow-sm ${colors.badge}`}>{idx + 1}</div>
                         <div className={`flex-1 text-right border-r pr-4 md:pr-6 ${colors.border}`}>
                             <p className={`font-bold text-2xl md:text-3xl font-serif mb-1 ${colors.text}`}>{word.arabic}</p>
-                            <p className="text-[10px] md:text-xs text-slate-500 font-bold uppercase tracking-wider opacity-70 group-hover:opacity-100 transition-opacity">{word.transliteration}</p>
+                            <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider opacity-70 group-hover:opacity-100 transition-opacity">{word.transliteration}</p>
                         </div>
-                        <div className="flex-1 pl-4 md:pl-6 text-left"><p className="font-bold text-slate-700 text-sm md:text-xl leading-tight">{word.meaning}</p></div>
+                        <div className="flex-1 pl-4 md:pl-6 text-left"><p className="font-bold text-slate-700 dark:text-slate-300 text-sm md:text-xl leading-tight transition-colors">{word.meaning}</p></div>
                     </motion.div>
                     );
                 })}
             </div>
          </div>
-         <div className="sticky bottom-0 lg:absolute left-0 right-0 p-4 md:p-6 lg:p-8 bg-white/95 backdrop-blur border-t border-slate-100 z-20 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] lg:shadow-none mt-auto">
+         <div className="sticky bottom-0 lg:absolute left-0 right-0 p-4 md:p-6 lg:p-8 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-t border-slate-100 dark:border-slate-800 z-20 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] dark:shadow-none lg:shadow-none mt-auto transition-colors">
             <div className="w-full max-w-md mx-auto flex flex-col items-center">
-                <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 md:mb-3">Ayah {currentIndex + 1} of {totalLevels}</p>
-                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => { stopAudio(); onReady(); }} className="w-full py-3 md:py-4 rounded-xl md:rounded-2xl font-bold text-base md:text-xl transition-all flex items-center justify-center gap-2 md:gap-3 uppercase tracking-wide bg-emerald-600 text-white shadow-lg shadow-emerald-200 hover:shadow-emerald-300">
+                <p className="text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 md:mb-3">Ayah {currentIndex + 1} of {totalLevels}</p>
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => { stopAudio(); onReady(); }} className="w-full py-3 md:py-4 rounded-xl md:rounded-2xl font-bold text-base md:text-xl transition-all flex items-center justify-center gap-2 md:gap-3 uppercase tracking-wide bg-emerald-600 text-white shadow-lg shadow-emerald-200 dark:shadow-none hover:shadow-emerald-300 dark:hover:bg-emerald-500">
                     <span>Start Quiz</span> <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />
                 </motion.button>
             </div>
@@ -288,7 +285,6 @@ const QuizView = ({ level, onNext, onMistake, currentIndex, totalLevels }: { lev
     const [status, setStatus] = useState<'playing' | 'success' | 'error'>('playing'); 
     const audioRef = useRef<HTMLAudioElement | null>(null);
   
-    // --- FIXED: Audio Object Memory Leak ---
     useEffect(() => {
       audioRef.current = new Audio(level.audio);
       
@@ -354,23 +350,23 @@ const QuizView = ({ level, onNext, onMistake, currentIndex, totalLevels }: { lev
     };
   
     return (
-      <div className="flex flex-col h-full w-full bg-slate-50/50 relative">
+      <div className="flex flex-col h-full w-full bg-slate-50/50 dark:bg-slate-950/50 relative transition-colors">
         <div className="flex-1 overflow-y-auto p-4 md:p-10 pb-56 md:pb-64 scroll-smooth">
           <div className="max-w-4xl mx-auto w-full">
             <div className="flex items-center justify-between mb-6 md:mb-8">
                 <div>
-                    <h2 className="text-xl md:text-3xl font-bold text-slate-800">Construct the Ayah</h2>
-                    <p className="text-slate-400 text-xs md:text-sm font-medium mt-1">Tap words in correct order</p>
+                    <h2 className="text-xl md:text-3xl font-bold text-slate-800 dark:text-slate-100 transition-colors">Construct the Ayah</h2>
+                    <p className="text-slate-400 dark:text-slate-500 text-xs md:text-sm font-medium mt-1">Tap words in correct order</p>
                 </div>
-                <motion.button whileTap={{ scale: 0.9 }} onClick={playHintAudio} className="w-10 h-10 md:w-14 md:h-14 bg-white border border-slate-200 rounded-full flex items-center justify-center text-emerald-600 shadow-sm hover:shadow-md transition-all shrink-0 ml-4">
+                <motion.button whileTap={{ scale: 0.9 }} onClick={playHintAudio} className="w-10 h-10 md:w-14 md:h-14 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-sm hover:shadow-md transition-all shrink-0 ml-4">
                   <Volume2 className="w-5 h-5 md:w-6 md:h-6" />
                 </motion.button>
             </div>
             
-            <div dir="rtl" className={`min-h-[140px] md:min-h-[180px] border-2 md:border-4 border-dashed rounded-2xl md:rounded-[2.5rem] p-4 md:p-8 mb-6 md:mb-10 flex flex-wrap gap-2 md:gap-4 items-center justify-center transition-colors duration-300 ${status === 'error' ? 'bg-red-50 border-red-200' : 'bg-white border-slate-200'}`}>
+            <div dir="rtl" className={`min-h-[140px] md:min-h-[180px] border-2 md:border-4 border-dashed rounded-2xl md:rounded-[2.5rem] p-4 md:p-8 mb-6 md:mb-10 flex flex-wrap gap-2 md:gap-4 items-center justify-center transition-colors duration-300 ${status === 'error' ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/50' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700'}`}>
                 <AnimatePresence>
                     {selectedWords.length === 0 && (
-                    <motion.span dir="ltr" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-slate-400 font-medium flex items-center gap-2 text-sm md:text-lg text-center">
+                    <motion.span dir="ltr" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-slate-400 dark:text-slate-500 font-medium flex items-center gap-2 text-sm md:text-lg text-center">
                         <Target className="w-5 h-5 md:w-6 md:h-6 shrink-0" /> Tap words below to build
                     </motion.span>
                     )}
@@ -413,34 +409,34 @@ const QuizView = ({ level, onNext, onMistake, currentIndex, totalLevels }: { lev
           </div>
         </div>
         
-        <motion.div initial={{ y: 100 }} animate={{ y: 0 }} className={clsx("absolute bottom-0 left-0 right-0 p-4 md:p-6 border-t-2 z-20 transition-colors duration-300", status === 'success' ? 'bg-emerald-100 border-emerald-200' : status === 'error' ? 'bg-red-100 border-red-200' : 'bg-white border-slate-200')}>
+        <motion.div initial={{ y: 100 }} animate={{ y: 0 }} className={clsx("absolute bottom-0 left-0 right-0 p-4 md:p-6 border-t-2 z-20 transition-colors duration-300", status === 'success' ? 'bg-emerald-100 dark:bg-emerald-900 border-emerald-200 dark:border-emerald-800' : status === 'error' ? 'bg-red-100 dark:bg-red-900 border-red-200 dark:border-red-800' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800')}>
           <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="w-full sm:flex-1 flex justify-center sm:justify-start">
                <AnimatePresence mode='wait'>
                     {status === 'playing' && (
-                        <motion.div key="playing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-3 md:gap-4 opacity-60">
-                            <div className="w-10 h-10 md:w-14 md:h-14 shrink-0 rounded-full border-2 border-slate-300 flex items-center justify-center text-slate-400"><Target className="w-5 h-5 md:w-6 md:h-6" /></div>
+                        <motion.div key="playing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-3 md:gap-4 opacity-60 dark:opacity-80">
+                            <div className="w-10 h-10 md:w-14 md:h-14 shrink-0 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center text-slate-400 dark:text-slate-500"><Target className="w-5 h-5 md:w-6 md:h-6" /></div>
                             <div>
-                                <h3 className="text-slate-600 font-bold text-base md:text-lg">Ayah {currentIndex + 1} of {totalLevels}</h3>
-                                <p className="text-slate-400 font-medium text-xs md:text-sm">Build the sentence to continue</p>
+                                <h3 className="text-slate-600 dark:text-slate-300 font-bold text-base md:text-lg">Ayah {currentIndex + 1} of {totalLevels}</h3>
+                                <p className="text-slate-400 dark:text-slate-500 font-medium text-xs md:text-sm">Build the sentence to continue</p>
                             </div>
                         </motion.div>
                     )}
                     {status === 'success' && (
                         <motion.div key="success" initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex items-center gap-3 md:gap-4">
-                            <div className="w-10 h-10 md:w-14 md:h-14 shrink-0 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-200"><Check className="w-5 h-5 md:w-8 md:h-8" /></div>
+                            <div className="w-10 h-10 md:w-14 md:h-14 shrink-0 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-200 dark:shadow-none"><Check className="w-5 h-5 md:w-8 md:h-8" /></div>
                             <div>
-                                <h3 className="text-emerald-800 font-bold text-lg md:text-xl">Excellent!</h3>
-                                <p className="text-emerald-600 font-medium text-xs md:text-sm line-clamp-2">{level.lesson}</p>
+                                <h3 className="text-emerald-800 dark:text-emerald-100 font-bold text-lg md:text-xl">Excellent!</h3>
+                                <p className="text-emerald-600 dark:text-emerald-300 font-medium text-xs md:text-sm line-clamp-2">{level.lesson}</p>
                             </div>
                         </motion.div>
                     )}
                     {status === 'error' && (
                         <motion.div key="error" initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex items-center gap-3 md:gap-4">
-                            <div className="w-10 h-10 md:w-14 md:h-14 shrink-0 bg-red-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-red-200"><X className="w-5 h-5 md:w-8 md:h-8" /></div>
+                            <div className="w-10 h-10 md:w-14 md:h-14 shrink-0 bg-red-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-red-200 dark:shadow-none"><X className="w-5 h-5 md:w-8 md:h-8" /></div>
                             <div>
-                                <h3 className="text-red-800 font-bold text-lg md:text-xl">Incorrect</h3>
-                                <p className="text-red-600 font-medium text-xs md:text-sm">Check the order and try again.</p>
+                                <h3 className="text-red-800 dark:text-red-100 font-bold text-lg md:text-xl">Incorrect</h3>
+                                <p className="text-red-600 dark:text-red-300 font-medium text-xs md:text-sm">Check the order and try again.</p>
                             </div>
                         </motion.div>
                     )}
@@ -448,11 +444,11 @@ const QuizView = ({ level, onNext, onMistake, currentIndex, totalLevels }: { lev
             </div>
             <div className="w-full sm:w-40 shrink-0">
                {status === 'playing' ? (
-                  <motion.button whileTap={{ scale: 0.95 }} onClick={checkAnswer} disabled={selectedWords.length === 0} className="w-full py-3 md:py-4 bg-slate-800 disabled:bg-slate-300 text-white rounded-xl md:rounded-2xl font-bold shadow-lg active:translate-y-1 transition-all uppercase tracking-wider text-sm md:text-lg">Check</motion.button>
+                  <motion.button whileTap={{ scale: 0.95 }} onClick={checkAnswer} disabled={selectedWords.length === 0} className="w-full py-3 md:py-4 bg-slate-800 dark:bg-slate-700 disabled:bg-slate-300 dark:disabled:bg-slate-800 text-white dark:disabled:text-slate-600 rounded-xl md:rounded-2xl font-bold shadow-lg active:translate-y-1 transition-all uppercase tracking-wider text-sm md:text-lg">Check</motion.button>
                ) : status === 'success' ? (
-                  <motion.button whileTap={{ scale: 0.95 }} onClick={onNext} className="w-full py-3 md:py-4 bg-emerald-600 text-white rounded-xl md:rounded-2xl font-bold shadow-lg active:translate-y-1 transition-all uppercase tracking-wider text-sm md:text-lg">Continue</motion.button>
+                  <motion.button whileTap={{ scale: 0.95 }} onClick={onNext} className="w-full py-3 md:py-4 bg-emerald-600 dark:bg-emerald-500 text-white rounded-xl md:rounded-2xl font-bold shadow-lg active:translate-y-1 transition-all uppercase tracking-wider text-sm md:text-lg">Continue</motion.button>
                ) : (
-                  <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setStatus('playing'); setSelectedWords([]); setAvailableWords(prev => prev.map(w => ({ ...w, used: false }))); }} className="w-full py-3 md:py-4 bg-red-500 text-white rounded-xl md:rounded-2xl font-bold shadow-lg active:translate-y-1 transition-all uppercase tracking-wider text-sm md:text-lg">Retry</motion.button>
+                  <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setStatus('playing'); setSelectedWords([]); setAvailableWords(prev => prev.map(w => ({ ...w, used: false }))); }} className="w-full py-3 md:py-4 bg-red-500 dark:bg-red-600 text-white rounded-xl md:rounded-2xl font-bold shadow-lg active:translate-y-1 transition-all uppercase tracking-wider text-sm md:text-lg">Retry</motion.button>
                )}
             </div>
           </div>
@@ -479,7 +475,6 @@ export default function LearnPage() {
 
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
 
-  // --- FIXED: Render-Phase Redirect ---
   useEffect(() => {
     if (!surah) {
        router.replace('/dashboard');
@@ -493,14 +488,12 @@ export default function LearnPage() {
     }
   }, [surah, user.surahProgress]);
 
-  // Set random quote when completed
   useEffect(() => {
     if (isCompleted) {
       setRandomQuote(MOTIVATION_QUOTES[Math.floor(Math.random() * MOTIVATION_QUOTES.length)]);
     }
   }, [isCompleted]);
 
-  // Return null while effect runs if surah is undefined
   if (!surah) {
      return null;
   }
@@ -517,7 +510,6 @@ export default function LearnPage() {
     } else {
       completeSurah(surah.id);
       setIsCompleted(true);
-      // Give time to enjoy XP bar and Confetti
       setTimeout(() => router.push('/dashboard'), 4500);
     }
   };
@@ -535,10 +527,10 @@ export default function LearnPage() {
 
   if (user.hearts === 0) {
     return (
-      <div className="fixed inset-0 z-[60] bg-slate-900/95 backdrop-blur flex flex-col items-center justify-center p-6 text-center animate-in zoom-in duration-300">
+      <div className="fixed inset-0 z-[60] bg-slate-900/95 dark:bg-slate-950/98 backdrop-blur flex flex-col items-center justify-center p-6 text-center animate-in zoom-in duration-300">
         <motion.div 
             initial={{ scale: 0 }} animate={{ scale: 1 }} 
-            className="w-24 h-24 md:w-32 md:h-32 bg-slate-800 rounded-full flex items-center justify-center mb-6 md:mb-8 border-4 border-slate-700"
+            className="w-24 h-24 md:w-32 md:h-32 bg-slate-800 dark:bg-slate-900 rounded-full flex items-center justify-center mb-6 md:mb-8 border-4 border-slate-700 dark:border-slate-800"
         >
             <Heart className="w-12 h-12 md:w-16 md:h-16 text-slate-500" fill="none" strokeWidth={1.5} />
         </motion.div>
@@ -567,48 +559,45 @@ export default function LearnPage() {
     );
   }
 
-  // --- NEW: Enhanced Completion Screen with XP Bar & Quote ---
   if (isCompleted) {
       return (
-        <div className="fixed inset-0 z-[60] bg-emerald-500 flex flex-col items-center justify-center text-white p-6 text-center animate-in zoom-in duration-500 overflow-hidden">
+        <div className="fixed inset-0 z-[60] bg-emerald-500 dark:bg-emerald-700 flex flex-col items-center justify-center text-white p-6 text-center animate-in zoom-in duration-500 overflow-hidden transition-colors">
            <Confetti />
            <motion.div 
              animate={{ y: [0, -20, 0] }} transition={{ repeat: Infinity, duration: 2 }}
-             className="w-32 h-32 md:w-40 md:h-40 bg-white rounded-full flex items-center justify-center mb-6 md:mb-8 shadow-2xl relative z-10"
+             className="w-32 h-32 md:w-40 md:h-40 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center mb-6 md:mb-8 shadow-2xl relative z-10"
            >
-              <Award className="w-16 h-16 md:w-20 md:h-20 text-emerald-600" />
+              <Award className="w-16 h-16 md:w-20 md:h-20 text-emerald-600 dark:text-emerald-400" />
            </motion.div>
            <h2 className="text-4xl md:text-5xl font-bold mb-3 md:mb-4 relative z-10">MashaAllah!</h2>
-           <p className="text-emerald-100 text-lg md:text-2xl mb-8 md:mb-10 relative z-10">Surah {surah.title} Completed.</p>
+           <p className="text-emerald-100 dark:text-emerald-50 text-lg md:text-2xl mb-8 md:mb-10 relative z-10">Surah {surah.title} Completed.</p>
            
-           {/* Animated XP Bar */}
            <div className="w-full max-w-xs relative z-10 mb-8">
              <div className="flex justify-between text-sm font-bold mb-2">
-               <span className="text-emerald-100 uppercase tracking-wider text-xs">Total XP</span>
-               <span className="text-yellow-300 animate-pulse">+100 Gained!</span>
+               <span className="text-emerald-100 dark:text-emerald-200 uppercase tracking-wider text-xs">Total XP</span>
+               <span className="text-yellow-300 dark:text-yellow-400 animate-pulse">+100 Gained!</span>
              </div>
-             <div className="h-4 bg-emerald-700 rounded-full overflow-hidden border border-emerald-400/30 p-0.5">
+             <div className="h-4 bg-emerald-700 dark:bg-emerald-900 rounded-full overflow-hidden border border-emerald-400/30 dark:border-emerald-600/30 p-0.5">
                <motion.div 
                  initial={{ width: 0 }}
                  animate={{ width: "100%" }}
                  transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
-                 className="h-full bg-yellow-400 rounded-full relative"
+                 className="h-full bg-yellow-400 dark:bg-yellow-500 rounded-full relative"
                >
                  <div className="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite]"></div>
                </motion.div>
              </div>
              <div className="mt-3 text-white text-lg font-bold flex items-center justify-center gap-1.5 drop-shadow-md">
-               <Zap className="w-5 h-5 text-yellow-300 fill-current" />
+               <Zap className="w-5 h-5 text-yellow-300 dark:text-yellow-400 fill-current" />
                {user.xp} XP
              </div>
            </div>
 
-           {/* Random Motivation Quote */}
            <motion.p 
              initial={{ opacity: 0, y: 10 }}
              animate={{ opacity: 1, y: 0 }}
              transition={{ delay: 1.5, duration: 0.5 }}
-             className="text-emerald-50 text-base md:text-lg italic max-w-sm relative z-10 leading-relaxed px-4"
+             className="text-emerald-50 dark:text-emerald-100 text-base md:text-lg italic max-w-sm relative z-10 leading-relaxed px-4"
            >
              "{randomQuote}"
            </motion.p>
@@ -621,26 +610,26 @@ export default function LearnPage() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-50 flex items-center justify-center">
-      <div className="w-full h-full flex flex-col relative bg-white">
+    <div className="fixed inset-0 z-50 bg-slate-50 dark:bg-slate-950 flex items-center justify-center transition-colors">
+      <div className="w-full h-full flex flex-col relative bg-white dark:bg-slate-950 transition-colors">
          
          {/* Top Navbar */}
-         <div className="w-full px-4 py-3 md:px-6 md:py-4 flex items-center justify-between border-b border-slate-100 bg-white z-30 shadow-sm shrink-0">
+         <div className="w-full px-4 py-3 md:px-6 md:py-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-30 shadow-sm shrink-0 transition-colors">
             
             <div className="flex items-center gap-1 md:gap-2 shrink-0">
                 <button 
                    onClick={() => router.push('/dashboard')} 
-                   className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                   className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
                    aria-label="Close lesson"
                 >
-                   <X className="w-5 h-5 md:w-6 md:h-6 text-slate-400" />
+                   <X className="w-5 h-5 md:w-6 md:h-6 text-slate-400 dark:text-slate-500" />
                 </button>
                 <button 
                    onClick={handleBack}
                    disabled={currentLevelIndex === 0}
                    className={clsx(
                      "p-2 rounded-full transition-colors",
-                     currentLevelIndex === 0 ? "text-slate-200 cursor-not-allowed" : "text-slate-400 hover:bg-slate-100"
+                     currentLevelIndex === 0 ? "text-slate-200 dark:text-slate-700 cursor-not-allowed" : "text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
                    )}
                    aria-label="Previous Ayah"
                 >
@@ -650,27 +639,27 @@ export default function LearnPage() {
             
             <div className="flex-1 max-w-md mx-4 md:mx-6 flex flex-col">
                <div className="flex justify-between items-end mb-1.5 px-1">
-                 <span className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider truncate mr-2">{surah.title}</span>
-                 <span className="text-[10px] md:text-xs font-bold text-emerald-500 uppercase tracking-wider shrink-0">{currentLevelIndex + 1} / {surah.levels.length}</span>
+                 <span className="text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate mr-2">{surah.title}</span>
+                 <span className="text-[10px] md:text-xs font-bold text-emerald-500 dark:text-emerald-400 uppercase tracking-wider shrink-0">{currentLevelIndex + 1} / {surah.levels.length}</span>
                </div>
-               <div className="h-2 md:h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+               <div className="h-2 md:h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden transition-colors">
                  <motion.div 
                    initial={{ width: 0 }}
                    animate={{ width: `${progress}%` }}
                    transition={{ duration: 0.5 }}
-                   className="h-full bg-emerald-500 rounded-full"
+                   className="h-full bg-emerald-500 dark:bg-emerald-400 rounded-full"
                  ></motion.div>
                </div>
             </div>
 
-            <div className="flex items-center text-rose-500 font-bold text-sm md:text-lg gap-1.5 md:gap-2 bg-rose-50 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full shrink-0">
+            <div className="flex items-center text-rose-500 dark:text-rose-400 font-bold text-sm md:text-lg gap-1.5 md:gap-2 bg-rose-50 dark:bg-rose-900/30 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full shrink-0 transition-colors">
                <Heart className="w-4 h-4 md:w-5 md:h-5 fill-current animate-pulse" /> 
                <span>{user.hearts}</span>
             </div>
          </div>
 
          {/* Main Content Area */}
-         <div className="flex-1 relative overflow-hidden bg-white w-full h-full">
+         <div className="flex-1 relative overflow-hidden bg-white dark:bg-slate-950 w-full h-full transition-colors">
             <AnimatePresence mode='wait'>
                 {mode === 'learn' ? (
                     <motion.div key="learn" className="h-full w-full absolute inset-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>

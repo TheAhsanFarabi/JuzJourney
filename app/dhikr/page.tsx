@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@/context/UserContext';
+import { useTheme } from 'next-themes';
 import { ArrowLeft, CheckCircle, Heart } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -12,39 +13,47 @@ const TASBIH_STAGES = [
     label: "SubhanAllah", 
     meaning: "Glory be to Allah", 
     target: 33, 
-    hue: 150, saturation: 60, lightnessStart: 95, lightnessEnd: 85,
-    buttonColor: "bg-emerald-500", 
-    buttonShadow: "shadow-emerald-900",
-    buttonBorder: "border-emerald-400",
-    textColor: "text-emerald-600"
+    hue: 150, saturation: 60, 
+    lightnessStart: 95, lightnessEnd: 85,
+    darkLightnessStart: 10, darkLightnessEnd: 18,
+    buttonColor: "bg-emerald-500 dark:bg-emerald-600", 
+    buttonShadow: "shadow-emerald-900 dark:shadow-emerald-950",
+    buttonBorder: "border-emerald-400 dark:border-emerald-500",
+    textColor: "text-emerald-600 dark:text-emerald-400"
   },
   { 
     label: "Alhamdulillah", 
     meaning: "All praise is due to Allah", 
     target: 33, 
-    hue: 210, saturation: 70, lightnessStart: 95, lightnessEnd: 85,
-    buttonColor: "bg-blue-500", 
-    buttonShadow: "shadow-blue-900",
-    buttonBorder: "border-blue-400",
-    textColor: "text-blue-600"
+    hue: 210, saturation: 70, 
+    lightnessStart: 95, lightnessEnd: 85,
+    darkLightnessStart: 10, darkLightnessEnd: 18,
+    buttonColor: "bg-blue-500 dark:bg-blue-600", 
+    buttonShadow: "shadow-blue-900 dark:shadow-blue-950",
+    buttonBorder: "border-blue-400 dark:border-blue-500",
+    textColor: "text-blue-600 dark:text-blue-400"
   },
   { 
     label: "Allahu Akbar", 
     meaning: "Allah is the Greatest", 
     target: 34, 
-    hue: 270, saturation: 60, lightnessStart: 95, lightnessEnd: 85,
-    buttonColor: "bg-purple-500", 
-    buttonShadow: "shadow-purple-900",
-    buttonBorder: "border-purple-400",
-    textColor: "text-purple-600"
+    hue: 270, saturation: 60, 
+    lightnessStart: 95, lightnessEnd: 85,
+    darkLightnessStart: 10, darkLightnessEnd: 18,
+    buttonColor: "bg-purple-500 dark:bg-purple-600", 
+    buttonShadow: "shadow-purple-900 dark:shadow-purple-950",
+    buttonBorder: "border-purple-400 dark:border-purple-500",
+    textColor: "text-purple-600 dark:text-purple-400"
   }
 ];
 
 export default function DhikrPage() {
   const router = useRouter();
   const { refillHearts } = useUser();
+  const { resolvedTheme } = useTheme();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
+  const [mounted, setMounted] = useState(false);
   const [stageIndex, setStageIndex] = useState(0);
   const [count, setCount] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -57,8 +66,9 @@ export default function DhikrPage() {
   const isCoolingDownRef = useRef(false); 
   const COOLDOWN_MS = 600; // Updated: 0.6 seconds to recharge
 
-  // Initialize Audio
+  // Mount logic & Initialize Audio
   useEffect(() => {
+    setMounted(true);
     audioRef.current = new Audio('/click.mp3'); 
     audioRef.current.volume = 0.6; 
   }, []);
@@ -72,11 +82,19 @@ export default function DhikrPage() {
 
   const safeStageIndex = Math.min(stageIndex, TASBIH_STAGES.length - 1);
   const currentStage = TASBIH_STAGES[safeStageIndex];
+  
+  const isDark = mounted && resolvedTheme === 'dark';
 
-  // Dynamic Background Calculation
+  // Dynamic Background Calculation based on active theme
   const progressPercent = count / currentStage.target;
-  const currentLightness = currentStage.lightnessStart - (progressPercent * (currentStage.lightnessStart - currentStage.lightnessEnd));
-  const dynamicBgColor = `hsl(${currentStage.hue}, ${currentStage.saturation}%, ${currentLightness}%)`;
+  const startLightness = isDark ? currentStage.darkLightnessStart : currentStage.lightnessStart;
+  const endLightness = isDark ? currentStage.darkLightnessEnd : currentStage.lightnessEnd;
+  const currentLightness = startLightness - (progressPercent * (startLightness - endLightness));
+  
+  // Safe default background for server-side rendering to prevent hydration mismatches
+  const dynamicBgColor = mounted 
+    ? `hsl(${currentStage.hue}, ${currentStage.saturation}%, ${currentLightness}%)`
+    : undefined;
 
   const triggerConfetti = () => {
     confetti({
@@ -150,18 +168,18 @@ export default function DhikrPage() {
 
   return (
     <div 
-        className="min-h-screen flex flex-col items-center p-6 transition-colors duration-200 ease-linear"
-        style={{ backgroundColor: dynamicBgColor }}
+        className="min-h-screen flex flex-col items-center p-6 bg-slate-50 dark:bg-slate-950 transition-colors duration-200 ease-linear"
+        style={dynamicBgColor ? { backgroundColor: dynamicBgColor } : {}}
     >
       
       {/* Header */}
       <div className="w-full flex justify-between items-center mb-8 z-10">
-        <button onClick={() => router.back()} className="p-3 bg-white/50 backdrop-blur rounded-full shadow-sm hover:bg-white transition-colors cursor-pointer">
-          <ArrowLeft className="w-6 h-6 text-slate-700" />
+        <button onClick={() => router.back()} className="p-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur rounded-full shadow-sm hover:bg-white dark:hover:bg-slate-800 transition-colors cursor-pointer border border-transparent dark:border-slate-700/50">
+          <ArrowLeft className="w-6 h-6 text-slate-700 dark:text-slate-300" />
         </button>
-        <div className="flex items-center gap-2 bg-white/50 backdrop-blur px-4 py-2 rounded-full shadow-sm">
+        <div className="flex items-center gap-2 bg-white/50 dark:bg-slate-800/50 backdrop-blur px-4 py-2 rounded-full shadow-sm border border-transparent dark:border-slate-700/50">
            <Heart className="w-5 h-5 text-rose-500 fill-rose-500 animate-pulse" />
-           <span className="font-bold text-slate-600 text-sm">Refilling...</span>
+           <span className="font-bold text-slate-600 dark:text-slate-300 text-sm">Refilling...</span>
         </div>
       </div>
 
@@ -174,11 +192,11 @@ export default function DhikrPage() {
                 exit={{ opacity: 0 }}
                 className="flex-1 flex flex-col items-center justify-center text-center"
             >
-                <div className="w-40 h-40 bg-white rounded-full flex items-center justify-center mb-6 shadow-2xl animate-bounce">
-                    <CheckCircle className="w-20 h-20 text-emerald-500" />
+                <div className="w-40 h-40 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 shadow-2xl animate-bounce">
+                    <CheckCircle className="w-20 h-20 text-emerald-500 dark:text-emerald-400" />
                 </div>
-                <h1 className="text-4xl font-black text-slate-800 mb-2">MashaAllah!</h1>
-                <p className="text-slate-600 font-medium text-xl">Hearts Fully Refilled.</p>
+                <h1 className="text-4xl font-black text-slate-800 dark:text-slate-100 mb-2">MashaAllah!</h1>
+                <p className="text-slate-600 dark:text-slate-400 font-medium text-xl">Hearts Fully Refilled.</p>
             </motion.div>
         ) : (
             <motion.div 
@@ -194,15 +212,15 @@ export default function DhikrPage() {
                     key={currentStage.label}
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    className={`text-5xl font-black ${currentStage.textColor} drop-shadow-sm`}
+                    className={`text-5xl font-black ${currentStage.textColor} drop-shadow-sm transition-colors`}
                 >
                     {currentStage.label}
                 </motion.h2>
-                <p className="text-slate-500 font-bold text-lg opacity-80">{currentStage.meaning}</p>
+                <p className="text-slate-500 dark:text-slate-400 font-bold text-lg opacity-80 transition-colors">{currentStage.meaning}</p>
                 
                 <div className="flex justify-center gap-3 pt-6">
                     {TASBIH_STAGES.map((_, i) => (
-                        <div key={i} className={`h-3 rounded-full transition-all duration-500 ${i === safeStageIndex ? `w-12 ${currentStage.buttonColor}` : 'w-3 bg-slate-300/50'}`} />
+                        <div key={i} className={`h-3 rounded-full transition-all duration-500 ${i === safeStageIndex ? `w-12 ${currentStage.buttonColor}` : 'w-3 bg-slate-300/50 dark:bg-slate-700/50'}`} />
                     ))}
                 </div>
             </div>
@@ -267,7 +285,7 @@ export default function DhikrPage() {
                                 initial={{ opacity: 0.5, scale: 1 }}
                                 animate={{ opacity: 0, scale: 1.5 }}
                                 transition={{ duration: 0.6, ease: "easeOut" }}
-                                className="absolute inset-0 rounded-full bg-white pointer-events-none z-20"
+                                className="absolute inset-0 rounded-full bg-white dark:bg-slate-200 pointer-events-none z-20"
                             />
                         )}
                     </AnimatePresence>
@@ -275,7 +293,7 @@ export default function DhikrPage() {
                 </motion.button>
             </div>
 
-            <p className={`font-bold uppercase tracking-[0.2em] text-sm mb-12 transition-all duration-300 ${isCooldown ? 'text-slate-400/50 scale-95' : 'text-slate-500/80 animate-pulse scale-100'}`}>
+            <p className={`font-bold uppercase tracking-[0.2em] text-sm mb-12 transition-all duration-300 ${isCooldown ? 'text-slate-400/50 dark:text-slate-500/50 scale-95' : 'text-slate-500/80 dark:text-slate-400/80 animate-pulse scale-100'}`}>
                 {isCooldown ? 'Recharging...' : 'Tap to Count'}
             </p>
 

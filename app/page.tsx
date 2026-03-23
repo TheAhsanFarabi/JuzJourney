@@ -108,7 +108,7 @@ export default function Home() {
                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
                     className="text-3xl font-extrabold text-slate-800 mb-2 tracking-tight"
                   >
-                    Salaam Alaikum!
+                    Assalamualaikum!
                   </motion.h2>
                   
                   <motion.p 
